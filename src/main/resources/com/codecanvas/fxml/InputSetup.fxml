@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.InputSetupController">
+    <padding>
+        <Insets top="30.0" right="30.0" bottom="30.0" left="30.0" />
+    </padding>
+    <children>
+        <Label text="Set Up Input" style="-fx-font-size: 22px;" />
+        <Button fx:id="exampleInputButton" text="Example Input" onAction="#handleExampleInput" prefWidth="200.0" />
+        <Button fx:id="customInputButton" text="Custom Input" onAction="#handleCustomInputToggle" prefWidth="200.0" />
+        <TextField fx:id="customInputField" promptText="e.g. 5,3,8,1" disable="true" />
+        <CheckBox fx:id="quizModeCheckBox" text="Quiz Mode" />
+        <Button fx:id="continueButton" text="Continue" onAction="#handleContinue" prefWidth="200.0" />
+    </children>
+</VBox>

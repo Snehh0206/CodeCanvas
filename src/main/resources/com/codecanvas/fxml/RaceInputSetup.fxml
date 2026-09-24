@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="12.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.RaceInputSetupController">
+    <padding>
+        <Insets top="30.0" right="30.0" bottom="30.0" left="30.0" />
+    </padding>
+    <children>
+        <Label text="Input for Algorithm 1" />
+        <Button fx:id="example1Button" text="Example Input" onAction="#handleExample1" prefWidth="200.0" />
+        <Button fx:id="custom1Button" text="Custom Input" onAction="#handleCustom1Toggle" prefWidth="200.0" />
+        <TextField fx:id="custom1Field" promptText="e.g. 5,3,8,1" disable="true" />
+
+        <Label text="Input for Algorithm 2" />
+        <Button fx:id="example2Button" text="Example Input" onAction="#handleExample2" prefWidth="200.0" />
+        <Button fx:id="custom2Button" text="Custom Input" onAction="#handleCustom2Toggle" prefWidth="200.0" />
+        <TextField fx:id="custom2Field" promptText="e.g. 5,3,8,1" disable="true" />
+
+        <Button fx:id="startRaceButton" text="Start Race" onAction="#handleStartRace" prefWidth="200.0" />
+    </children>
+</VBox>

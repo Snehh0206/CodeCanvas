@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+
+<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.RaceModeController">
+    <top>
+        <HBox spacing="10.0" BorderPane.alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <children>
+                <Button text="← Back" onAction="#handleBack" />
+                <Button text="Dashboard" onAction="#handleDashboard" />
+            </children>
+        </HBox>
+    </top>
+    <center>
+        <HBox spacing="20.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <children>
+                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="algorithm1NameLabel" text="Algorithm 1" />
+                        <Pane fx:id="visualizationPane1" prefHeight="300.0" prefWidth="400.0" />
+                        <Label fx:id="stats1Label" text="Comparisons: 0 | Swaps: 0" />
+                        <Label fx:id="timeComplexity1Label" text="Complexity: -" />
+                        <Label fx:id="executionTime1Label" text="Time: -" />
+                        <ProgressBar fx:id="progress1Bar" progress="0.0" prefWidth="400.0" />
+                    </children>
+                </VBox>
+                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="algorithm2NameLabel" text="Algorithm 2" />
+                        <Pane fx:id="visualizationPane2" prefHeight="300.0" prefWidth="400.0" />
+                        <Label fx:id="stats2Label" text="Comparisons: 0 | Swaps: 0" />
+                        <Label fx:id="timeComplexity2Label" text="Complexity: -" />
+                        <Label fx:id="executionTime2Label" text="Time: -" />
+                        <ProgressBar fx:id="progress2Bar" progress="0.0" prefWidth="400.0" />
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </center>
+
+    <bottom>
+        <Label fx:id="resultLabel" text="" BorderPane.alignment="CENTER">
+            <BorderPane.margin>
+                <Insets top="10.0" bottom="20.0" />
+            </BorderPane.margin>
+        </Label>
+    </bottom>
+
+</BorderPane>
