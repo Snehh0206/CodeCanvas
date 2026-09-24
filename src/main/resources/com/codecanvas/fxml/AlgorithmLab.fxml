@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.AlgorithmLabController">
+
+
+    <center>
+        <StackPane BorderPane.alignment="CENTER">
+            <children>
+                <Pane fx:id="visualizationPane" />
+            </children>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <children>
+                <HBox spacing="10.0">
+                    <children>
+                        <Button fx:id="startButton" text="Start" onAction="#handleStart" />
+                        <Button fx:id="pauseButton" text="Pause" onAction="#handlePause" />
+                        <Button fx:id="previousButton" text="Previous" onAction="#handlePrevious" />
+                        <Button fx:id="nextButton" text="Next" onAction="#handleNext" />
+                        <Button fx:id="restartButton" text="Restart" onAction="#handleRestart" />
+                    </children>
+                </HBox>
+                <Slider fx:id="speedSlider" min="1.0" max="10.0" value="5.0" />
+                <CheckBox fx:id="quizModeCheckBox" text="Quiz Mode" />
+            </children>
+        </VBox>
+    </bottom>
+
+    <right>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <children>
+                <Label fx:id="currentStepLabel" text="Current Step: 0" />
+                <Label fx:id="totalStepsLabel" text="Total Steps: 0" />
+                <Label fx:id="comparisonsLabel" text="Comparisons: 0" />
+                <Label fx:id="swapsLabel" text="Swaps: 0" />
+                <Label fx:id="executionTimeLabel" text="Execution Time: 0ms" />
+                <Label fx:id="theoreticalComplexityLabel" text="Complexity: -" />
+                <ProgressBar fx:id="progressBar" progress="0.0" />
+            </children>
+        </VBox>
+    </right>
+
+</BorderPane>
