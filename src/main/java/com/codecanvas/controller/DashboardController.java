@@ -34,7 +34,7 @@ public class DashboardController {
 
     @FXML
     private void handleHistory() {
-        System.out.println("History not built yet");
+        SceneManager.switchTo("History.fxml");
     }
 
     @FXML
