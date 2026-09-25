@@ -15,6 +15,8 @@ import com.codecanvas.model.RaceSession;
 import com.codecanvas.visualization.BarVisualizer;
 import com.codecanvas.visualization.GraphVisualizer;
 import com.codecanvas.service.GraphInputParser;
+import com.codecanvas.service.AppExecutor;
+import com.codecanvas.service.GraphInputParser;
 
 import com.codecanvas.service.SceneManager;
 
@@ -26,6 +28,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
+import javafx.application.Platform;
 
 import java.net.URL;
 import java.util.List;
@@ -101,16 +104,23 @@ public class RaceModeController implements Initializable {
         barVisualizer1.initialize(visualizationPane1, input1);
         barVisualizer2.initialize(visualizationPane2, input2);
 
-        long start1 = System.nanoTime();
-        List<AlgorithmStep> steps1 = algo1.run(input1);
-        time1Micros = (System.nanoTime() - start1) / 1_000;
+        AppExecutor.submit(() -> {
+            long start = System.nanoTime();
+            List<AlgorithmStep> steps = algo1.run(input1);
+            time1Micros = (System.nanoTime() - start) / 1_000;
 
-        long start2 = System.nanoTime();
-        List<AlgorithmStep> steps2 = algo2.run(input2);
-        time2Micros = (System.nanoTime() - start2) / 1_000;
+            Platform.runLater(() ->
+                    playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true));
+        });
 
-        playSortingSteps(steps1, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
-        playSortingSteps(steps2, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+        AppExecutor.submit(() -> {
+            long start = System.nanoTime();
+            List<AlgorithmStep> steps = algo2.run(input2);
+            time2Micros = (System.nanoTime() - start) / 1_000;
+
+            Platform.runLater(() ->
+                    playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false));
+        });
     }
 
     private void playSortingSteps(List<AlgorithmStep> steps, BarVisualizer visualizer, ProgressBar progressBar,
@@ -171,16 +181,26 @@ public class RaceModeController implements Initializable {
         graphVisualizer1.initialize(visualizationPane1, graph1);
         graphVisualizer2.initialize(visualizationPane2, graph2);
 
-        long start1 = System.nanoTime();
-        List<GraphStep> steps1 = algo1.run(graph1, startNode);
-        time1Micros = (System.nanoTime() - start1) / 1_000;
+        Graph finalGraph1 = graph1;
+        Graph finalGraph2 = graph2;
 
-        long start2 = System.nanoTime();
-        List<GraphStep> steps2 = algo2.run(graph2, startNode);
-        time2Micros = (System.nanoTime() - start2) / 1_000;
+        AppExecutor.submit(() -> {
+            long start = System.nanoTime();
+            List<GraphStep> steps = algo1.run(finalGraph1, startNode);
+            time1Micros = (System.nanoTime() - start) / 1_000;
 
-        playGraphSteps(steps1, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
-        playGraphSteps(steps2, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+            Platform.runLater(() ->
+                    playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, true));
+        });
+
+        AppExecutor.submit(() -> {
+            long start = System.nanoTime();
+            List<GraphStep> steps = algo2.run(finalGraph2, startNode);
+            time2Micros = (System.nanoTime() - start) / 1_000;
+
+            Platform.runLater(() ->
+                    playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, false));
+        });
     }
 
     private void playGraphSteps(List<GraphStep> steps, GraphVisualizer visualizer, ProgressBar progressBar,

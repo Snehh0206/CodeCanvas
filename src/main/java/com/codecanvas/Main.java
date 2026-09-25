@@ -1,5 +1,6 @@
 package com.codecanvas;
 
+import com.codecanvas.service.AppExecutor;
 import com.codecanvas.service.SceneManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -10,6 +11,11 @@ public class Main extends Application {
         primaryStage.setTitle("CodeCanvas");
         SceneManager.setPrimaryStage(primaryStage);
         SceneManager.switchTo("Splash.fxml");
+    }
+
+    @Override
+    public void stop() {
+        AppExecutor.shutdown();
     }
 
     public static void main(String[] args) {

@@ -15,11 +15,14 @@ import com.codecanvas.model.GraphStep;
 import com.codecanvas.visualization.BarVisualizer;
 import com.codecanvas.visualization.GraphVisualizer;
 import com.codecanvas.service.GraphInputParser;
+import com.codecanvas.service.AppExecutor;
+import com.codecanvas.service.GraphInputParser;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.application.Platform;
 
 import java.net.URL;
 import java.util.List;
@@ -77,7 +80,8 @@ public class AlgorithmLabController implements Initializable {
     }
 
     private void runSelectedAlgorithm() {
-        String selected = AlgorithmSession.getInstance().getSelectedAlgorithm();
+        AlgorithmSession session = AlgorithmSession.getInstance();
+        String selected = session.getSelectedAlgorithm();
 
         if (selected == null) {
             System.out.println("No algorithm selected");
@@ -88,7 +92,6 @@ public class AlgorithmLabController implements Initializable {
         currentGraphSteps = null;
 
         if (selected.equals("Dijkstra") || selected.equals("Bellman-Ford")) {
-            AlgorithmSession session = AlgorithmSession.getInstance();
             currentGraphAlgorithm = selected.equals("Dijkstra") ? new Dijkstra() : new BellmanFord();
 
             String startNode;
@@ -100,10 +103,17 @@ public class AlgorithmLabController implements Initializable {
                 startNode = "A";
             }
 
-            currentGraphSteps = currentGraphAlgorithm.run(currentGraph, startNode);
-            currentStepIndex = 0;
-            graphVisualizer.initialize(visualizationPane, currentGraph);
-            renderCurrentGraphStep();
+            String finalStartNode = startNode;
+            AppExecutor.submit(() -> {
+                List<GraphStep> computedSteps = currentGraphAlgorithm.run(currentGraph, finalStartNode);
+
+                Platform.runLater(() -> {
+                    currentGraphSteps = computedSteps;
+                    currentStepIndex = 0;
+                    graphVisualizer.initialize(visualizationPane, currentGraph);
+                    renderCurrentGraphStep();
+                });
+            });
             return;
         }
 
@@ -115,10 +125,16 @@ public class AlgorithmLabController implements Initializable {
 
         if (currentAlgorithm == null) return;
 
-        currentSteps = currentAlgorithm.run(currentInput);
-        currentStepIndex = 0;
-        visualizer.initialize(visualizationPane, currentInput);
-        renderCurrentStep();
+        AppExecutor.submit(() -> {
+            List<AlgorithmStep> computedSteps = currentAlgorithm.run(currentInput);
+
+            Platform.runLater(() -> {
+                currentSteps = computedSteps;
+                currentStepIndex = 0;
+                visualizer.initialize(visualizationPane, currentInput);
+                renderCurrentStep();
+            });
+        });
     }
 
     @FXML
