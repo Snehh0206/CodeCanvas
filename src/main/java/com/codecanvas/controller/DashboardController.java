@@ -39,7 +39,7 @@ public class DashboardController {
 
     @FXML
     private void handleStatistics() {
-        System.out.println("Statistics not built yet");
+        SceneManager.switchTo("Statistics.fxml");
     }
 
     @FXML

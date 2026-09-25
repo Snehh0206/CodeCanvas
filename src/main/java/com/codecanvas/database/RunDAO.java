@@ -66,6 +66,25 @@ public class RunDAO {
         return runs;
     }
 
+    public List<Run> getRunsByAlgorithm(String algorithm) {
+        List<Run> runs = new ArrayList<>();
+        String sql = "SELECT * FROM runs WHERE algorithm = ? ORDER BY input_size ASC";
+
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, algorithm);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                runs.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return runs;
+    }
+    
     public void deleteRun(int id) {
         String sql = "DELETE FROM runs WHERE id = ?";
 
@@ -92,4 +111,5 @@ public class RunDAO {
                 rs.getString("run_date")
         );
     }
+
 }
