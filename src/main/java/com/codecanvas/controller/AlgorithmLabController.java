@@ -17,6 +17,8 @@ import com.codecanvas.visualization.GraphVisualizer;
 import com.codecanvas.service.GraphInputParser;
 import com.codecanvas.service.AppExecutor;
 import com.codecanvas.service.GraphInputParser;
+import com.codecanvas.database.RunDAO;
+import com.codecanvas.model.Run;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -27,7 +29,8 @@ import javafx.application.Platform;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 public class AlgorithmLabController implements Initializable {
 
   //  @FXML private ComboBox<String> algorithmComboBox;
@@ -46,6 +49,7 @@ public class AlgorithmLabController implements Initializable {
     @FXML private Label executionTimeLabel;
     @FXML private Label theoreticalComplexityLabel;
     @FXML private ProgressBar progressBar;
+    private final RunDAO runDAO = new RunDAO();
 
     private int[] currentInput = {5, 2, 9, 1, 5, 6};
     private int currentStepIndex = 0;
@@ -105,15 +109,22 @@ public class AlgorithmLabController implements Initializable {
 
             String finalStartNode = startNode;
             AppExecutor.submit(() -> {
-                List<GraphStep> computedSteps = currentGraphAlgorithm.run(currentGraph, finalStartNode);
+                List<AlgorithmStep> computedSteps = currentAlgorithm.run(currentInput);
+
+                AlgorithmStep lastStep = computedSteps.get(computedSteps.size() - 1);
+                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                Run run = new Run(currentAlgorithm.getName(), "Custom", currentInput.length,
+                        computedSteps.size(), lastStep.getComparisons(), lastStep.getSwaps(), 0, timestamp);
+                runDAO.insertRun(run);
 
                 Platform.runLater(() -> {
-                    currentGraphSteps = computedSteps;
+                    currentSteps = computedSteps;
                     currentStepIndex = 0;
-                    graphVisualizer.initialize(visualizationPane, currentGraph);
-                    renderCurrentGraphStep();
+                    visualizer.initialize(visualizationPane, currentInput);
+                    renderCurrentStep();
                 });
             });
+
             return;
         }
 

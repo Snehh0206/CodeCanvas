@@ -47,6 +47,7 @@ public class RaceInputSetupController {
     @FXML
     private void handleStartRace() {
         RaceSession session = RaceSession.getInstance();
+        session.setCaseBattle(false);
         String category = session.getCategory();
 
         if (category.equals("Graph")) {

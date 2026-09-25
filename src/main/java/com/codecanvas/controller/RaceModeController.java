@@ -6,31 +6,28 @@ import com.codecanvas.algorithm.graph.BellmanFord;
 import com.codecanvas.algorithm.graph.Dijkstra;
 import com.codecanvas.algorithm.sorting.InsertionSort;
 import com.codecanvas.algorithm.sorting.QuickSort;
-import com.codecanvas.model.AlgorithmStep;
-import com.codecanvas.model.Graph;
-import com.codecanvas.model.GraphEdge;
-import com.codecanvas.model.GraphNode;
-import com.codecanvas.model.GraphStep;
-import com.codecanvas.model.RaceSession;
-import com.codecanvas.visualization.BarVisualizer;
-import com.codecanvas.visualization.GraphVisualizer;
-import com.codecanvas.service.GraphInputParser;
+import com.codecanvas.database.RunDAO;
+import com.codecanvas.model.*;
 import com.codecanvas.service.AppExecutor;
 import com.codecanvas.service.GraphInputParser;
-
 import com.codecanvas.service.SceneManager;
+import com.codecanvas.service.InputGenerator;
+import com.codecanvas.visualization.BarVisualizer;
+import com.codecanvas.visualization.GraphVisualizer;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
-import javafx.application.Platform;
 
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -46,6 +43,8 @@ public class RaceModeController implements Initializable {
     @FXML private Label timeComplexity2Label;
     @FXML private Label executionTime1Label;
     @FXML private Label executionTime2Label;
+    @FXML private Label thread1Label;
+    @FXML private Label thread2Label;
     @FXML private ProgressBar progress1Bar;
     @FXML private ProgressBar progress2Bar;
     @FXML private Label resultLabel;
@@ -54,6 +53,7 @@ public class RaceModeController implements Initializable {
     private final BarVisualizer barVisualizer2 = new BarVisualizer();
     private final GraphVisualizer graphVisualizer1 = new GraphVisualizer();
     private final GraphVisualizer graphVisualizer2 = new GraphVisualizer();
+    private final RunDAO runDAO = new RunDAO();
 
     private final int[] defaultInput = {8, 3, 9, 1, 6, 4, 7, 2};
 
@@ -65,6 +65,11 @@ public class RaceModeController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         RaceSession session = RaceSession.getInstance();
+
+        if (session.isCaseBattle()) {
+            runCaseBattle(session);
+            return;
+        }
 
         String name1 = session.getAlgorithm1Name();
         String name2 = session.getAlgorithm2Name();
@@ -85,7 +90,7 @@ public class RaceModeController implements Initializable {
         return name.equals("Dijkstra") || name.equals("Bellman-Ford");
     }
 
-    // ---------- SORTING RACE ----------
+    // ---------- SORTING RACE (user input) ----------
 
     private void runSortingRace(RaceSession session, String name1, String name2) {
         int[] input1 = session.isCustom1() && session.getCustomValues1() != null
@@ -105,21 +110,27 @@ public class RaceModeController implements Initializable {
         barVisualizer2.initialize(visualizationPane2, input2);
 
         AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
             long start = System.nanoTime();
             List<AlgorithmStep> steps = algo1.run(input1);
             time1Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() ->
-                    playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true));
+            Platform.runLater(() -> {
+                thread1Label.setText("Thread: " + threadName);
+                playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
+            });
         });
 
         AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
             long start = System.nanoTime();
             List<AlgorithmStep> steps = algo2.run(input2);
             time2Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() ->
-                    playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false));
+            Platform.runLater(() -> {
+                thread2Label.setText("Thread: " + threadName);
+                playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+            });
         });
     }
 
@@ -185,21 +196,27 @@ public class RaceModeController implements Initializable {
         Graph finalGraph2 = graph2;
 
         AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
             long start = System.nanoTime();
             List<GraphStep> steps = algo1.run(finalGraph1, startNode);
             time1Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() ->
-                    playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, true));
+            Platform.runLater(() -> {
+                thread1Label.setText("Thread: " + threadName);
+                playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
+            });
         });
 
         AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
             long start = System.nanoTime();
             List<GraphStep> steps = algo2.run(finalGraph2, startNode);
             time2Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() ->
-                    playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, false));
+            Platform.runLater(() -> {
+                thread2Label.setText("Thread: " + threadName);
+                playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+            });
         });
     }
 
@@ -243,6 +260,67 @@ public class RaceModeController implements Initializable {
         return graph;
     }
 
+    // ---------- CASE BATTLE ----------
+
+    private void runCaseBattle(RaceSession session) {
+        String name1 = session.getAlgorithm1Name();
+        String name2 = session.getAlgorithm2Name();
+        String case1 = session.getCase1();
+        String case2 = session.getCase2();
+        int size = session.getBattleInputSize();
+
+        int[] input1 = InputGenerator.generate(name1, case1, size);
+        int[] input2 = InputGenerator.generate(name2, case2, size);
+
+        Algorithm algo1 = createSortingAlgorithm(name1);
+        Algorithm algo2 = createSortingAlgorithm(name2);
+
+        algorithm1NameLabel.setText(algo1.getName() + " (" + case1 + ")");
+        algorithm2NameLabel.setText(algo2.getName() + " (" + case2 + ")");
+        timeComplexity1Label.setText("Complexity: " + describeComplexity(name1, case1) + " (" + case1 + ")");
+        timeComplexity2Label.setText("Complexity: " + describeComplexity(name2, case2) + " (" + case2 + ")");
+        resultLabel.setText("Racing...");
+
+        barVisualizer1.initialize(visualizationPane1, input1);
+        barVisualizer2.initialize(visualizationPane2, input2);
+
+        AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
+            long start = System.nanoTime();
+            List<AlgorithmStep> steps = algo1.run(input1);
+            time1Micros = (System.nanoTime() - start) / 1_000;
+
+            AlgorithmStep last = steps.get(steps.size() - 1);
+            saveRun(name1, case1, size, steps.size(), last.getComparisons(), last.getSwaps(), time1Micros);
+
+            Platform.runLater(() -> {
+                thread1Label.setText("Thread: " + threadName);
+                playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
+            });
+        });
+
+        AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
+            long start = System.nanoTime();
+            List<AlgorithmStep> steps = algo2.run(input2);
+            time2Micros = (System.nanoTime() - start) / 1_000;
+
+            AlgorithmStep last = steps.get(steps.size() - 1);
+            saveRun(name2, case2, size, steps.size(), last.getComparisons(), last.getSwaps(), time2Micros);
+
+            Platform.runLater(() -> {
+                thread2Label.setText("Thread: " + threadName);
+                playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+            });
+        });
+    }
+
+    private void saveRun(String algorithm, String caseType, int size, int steps, int comparisons, int swaps, long micros) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Run run = new Run(algorithm, caseType, size, steps, comparisons, swaps, micros, timestamp);
+        runDAO.insertRun(run);
+    }
+
     // ---------- SHARED ----------
 
     private void checkRaceFinished() {
@@ -258,16 +336,6 @@ public class RaceModeController implements Initializable {
                 resultLabel.setText("It's a tie! (" + time1Micros + "Β΅s each)");
             }
         }
-    }
-
-    @FXML
-    private void handleBack() {
-        SceneManager.goBack();
-    }
-
-    @FXML
-    private void handleDashboard() {
-        SceneManager.goToDashboard();
     }
 
     private String classifyCase(String algorithmName, int[] input) {
@@ -320,5 +388,15 @@ public class RaceModeController implements Initializable {
             case "Bellman-Ford" -> new BellmanFord();
             default -> null;
         };
+    }
+
+    @FXML
+    private void handleBack() {
+        SceneManager.goBack();
+    }
+
+    @FXML
+    private void handleDashboard() {
+        SceneManager.goToDashboard();
     }
 }

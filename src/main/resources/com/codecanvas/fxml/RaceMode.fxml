@@ -34,6 +34,7 @@
                         <Label fx:id="stats1Label" text="Comparisons: 0 | Swaps: 0" />
                         <Label fx:id="timeComplexity1Label" text="Complexity: -" />
                         <Label fx:id="executionTime1Label" text="Time: -" />
+                        <Label fx:id="thread1Label" text="Thread: -" />
                         <ProgressBar fx:id="progress1Bar" progress="0.0" prefWidth="400.0" />
                     </children>
                 </VBox>
@@ -44,6 +45,7 @@
                         <Label fx:id="stats2Label" text="Comparisons: 0 | Swaps: 0" />
                         <Label fx:id="timeComplexity2Label" text="Complexity: -" />
                         <Label fx:id="executionTime2Label" text="Time: -" />
+                        <Label fx:id="thread2Label" text="Thread: -" />
                         <ProgressBar fx:id="progress2Bar" progress="0.0" prefWidth="400.0" />
                     </children>
                 </VBox>

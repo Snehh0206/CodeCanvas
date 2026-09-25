@@ -4,17 +4,27 @@ public class RaceSession {
 
     private static final RaceSession instance = new RaceSession();
 
-    private String category; // "Sorting" or "Graph"
+    private String category;
     private String algorithm1Name;
     private String algorithm2Name;
+
+    // Sorting user-input mode
     private boolean custom1;
     private boolean custom2;
     private int[] customValues1;
     private int[] customValues2;
+
+    // Graph user-input mode
     private boolean customGraph;
     private int raceVertexCount;
     private String edges1Text;
     private String edges2Text;
+
+    // Case Battle mode
+    private boolean caseBattle = false;
+    private String case1;
+    private String case2;
+    private int battleInputSize;
 
     private RaceSession() {}
 
@@ -52,4 +62,16 @@ public class RaceSession {
 
     public String getEdges2Text() { return edges2Text; }
     public void setEdges2Text(String text) { this.edges2Text = text; }
+
+    public boolean isCaseBattle() { return caseBattle; }
+    public void setCaseBattle(boolean caseBattle) { this.caseBattle = caseBattle; }
+
+    public String getCase1() { return case1; }
+    public void setCase1(String case1) { this.case1 = case1; }
+
+    public String getCase2() { return case2; }
+    public void setCase2(String case2) { this.case2 = case2; }
+
+    public int getBattleInputSize() { return battleInputSize; }
+    public void setBattleInputSize(int size) { this.battleInputSize = size; }
 }

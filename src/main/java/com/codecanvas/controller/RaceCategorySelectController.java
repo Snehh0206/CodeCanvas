@@ -9,7 +9,7 @@ public class RaceCategorySelectController {
     @FXML
     private void handleSorting() {
         RaceSession.getInstance().setCategory("Sorting");
-        SceneManager.switchTo("RaceAlgorithmSelect.fxml");
+        SceneManager.switchTo("RaceModeSelect.fxml");
     }
 
     @FXML
