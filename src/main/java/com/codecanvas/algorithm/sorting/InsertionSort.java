@@ -48,5 +48,5 @@ public class InsertionSort implements Algorithm {
     public String getName() { return "Insertion Sort"; }
 
     @Override
-    public String getTheoreticalComplexity() { return "O(n^2) average/worst, O(n) best"; }
+    public String getTheoreticalComplexity() { return "O(n^2) average/worst, O(n) best^-^"; }
 }
