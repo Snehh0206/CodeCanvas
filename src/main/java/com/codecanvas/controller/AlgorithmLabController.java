@@ -14,6 +14,7 @@ import com.codecanvas.model.GraphNode;
 import com.codecanvas.model.GraphStep;
 import com.codecanvas.visualization.BarVisualizer;
 import com.codecanvas.visualization.GraphVisualizer;
+import com.codecanvas.service.GraphInputParser;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -87,9 +88,19 @@ public class AlgorithmLabController implements Initializable {
         currentGraphSteps = null;
 
         if (selected.equals("Dijkstra") || selected.equals("Bellman-Ford")) {
+            AlgorithmSession session = AlgorithmSession.getInstance();
             currentGraphAlgorithm = selected.equals("Dijkstra") ? new Dijkstra() : new BellmanFord();
-            currentGraph = buildExampleGraph();
-            currentGraphSteps = currentGraphAlgorithm.run(currentGraph, "A");
+
+            String startNode;
+            if (session.isCustomGraph()) {
+                currentGraph = GraphInputParser.parse(session.getVertexCount(), session.getEdgesText());
+                startNode = "0";
+            } else {
+                currentGraph = buildExampleGraph();
+                startNode = "A";
+            }
+
+            currentGraphSteps = currentGraphAlgorithm.run(currentGraph, startNode);
             currentStepIndex = 0;
             graphVisualizer.initialize(visualizationPane, currentGraph);
             renderCurrentGraphStep();

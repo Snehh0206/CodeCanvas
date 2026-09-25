@@ -16,6 +16,11 @@
         <Button fx:id="exampleInputButton" text="Example Input" onAction="#handleExampleInput" prefWidth="200.0" />
         <Button fx:id="customInputButton" text="Custom Input" onAction="#handleCustomInputToggle" prefWidth="200.0" />
         <TextField fx:id="customInputField" promptText="e.g. 5,3,8,1" disable="true" />
+
+        <Label text="Graph Input (Dijkstra/Bellman-Ford only)" />
+        <TextField fx:id="vertexCountField" promptText="Number of vertices, e.g. 5" />
+        <TextField fx:id="edgesField" promptText="e.g. 0-1,0-2,2-3" />
+
         <CheckBox fx:id="quizModeCheckBox" text="Quiz Mode" />
         <Button fx:id="continueButton" text="Continue" onAction="#handleContinue" prefWidth="200.0" />
     </children>
