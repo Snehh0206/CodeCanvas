@@ -21,6 +21,15 @@
         <Button fx:id="custom2Button" text="Custom Input" onAction="#handleCustom2Toggle" prefWidth="200.0" />
         <TextField fx:id="custom2Field" promptText="e.g. 5,3,8,1" disable="true" />
 
+        <Label text="Vertex Count (shared)" />
+        <TextField fx:id="raceVertexCountField" promptText="e.g. 5" />
+
+        <Label text="Edges for Algorithm 1" />
+        <TextField fx:id="raceEdges1Field" promptText="e.g. 0-1,0-2,2-3" />
+
+        <Label text="Edges for Algorithm 2" />
+        <TextField fx:id="raceEdges2Field" promptText="e.g. 0-1,1-2,2-3" />
+
         <Button fx:id="startRaceButton" text="Start Race" onAction="#handleStartRace" prefWidth="200.0" />
     </children>
 </VBox>

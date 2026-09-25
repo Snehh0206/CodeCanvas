@@ -11,6 +11,10 @@ public class RaceSession {
     private boolean custom2;
     private int[] customValues1;
     private int[] customValues2;
+    private boolean customGraph;
+    private int raceVertexCount;
+    private String edges1Text;
+    private String edges2Text;
 
     private RaceSession() {}
 
@@ -36,4 +40,16 @@ public class RaceSession {
 
     public int[] getCustomValues2() { return customValues2; }
     public void setCustomValues2(int[] values) { this.customValues2 = values; }
+
+    public boolean isCustomGraph() { return customGraph; }
+    public void setCustomGraph(boolean customGraph) { this.customGraph = customGraph; }
+
+    public int getRaceVertexCount() { return raceVertexCount; }
+    public void setRaceVertexCount(int count) { this.raceVertexCount = count; }
+
+    public String getEdges1Text() { return edges1Text; }
+    public void setEdges1Text(String text) { this.edges1Text = text; }
+
+    public String getEdges2Text() { return edges2Text; }
+    public void setEdges2Text(String text) { this.edges2Text = text; }
 }
