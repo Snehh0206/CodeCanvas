@@ -1,0 +1,29 @@
+.root {
+    -fx-background-color: #f4f4f4;
+    -fx-text-fill: #1a1a1a;
+}
+
+.label {
+    -fx-text-fill: #1a1a1a;
+}
+
+.button {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #1a1a1a;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.button:hover {
+    -fx-background-color: #e8e8e8;
+}
+
+.table-view {
+    -fx-background-color: #ffffff;
+}
+
+.combo-box, .text-field {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #1a1a1a;
+}

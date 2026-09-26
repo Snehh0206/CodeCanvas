@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.SettingsController">
+    <children>
+        <HBox spacing="10.0">
+            <children>
+                <Button text="← Back" onAction="#handleBack" />
+                <Button text="Dashboard" onAction="#handleDashboard" />
+            </children>
+        </HBox>
+
+        <Label text="Theme" />
+        <HBox spacing="10.0">
+            <children>
+                <RadioButton fx:id="lightModeRadio" text="Light Mode">
+                    <toggleGroup>
+                        <ToggleGroup fx:id="themeGroup" />
+                    </toggleGroup>
+                </RadioButton>
+                <RadioButton fx:id="darkModeRadio" text="Dark Mode" toggleGroup="$themeGroup" />
+            </children>
+        </HBox>
+
+        <Label text="Sound" />
+        <CheckBox fx:id="soundCheckBox" text="Sound Effects Enabled" />
+
+        <Label text="Animation" />
+        <CheckBox fx:id="animationCheckBox" text="Animation Enabled" />
+
+        <Button text="Save Settings" onAction="#handleSave" />
+    </children>
+    <padding>
+        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
+    </padding>
+</VBox>

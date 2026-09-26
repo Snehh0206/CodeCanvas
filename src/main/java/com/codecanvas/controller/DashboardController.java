@@ -44,6 +44,6 @@ public class DashboardController {
 
     @FXML
     private void handleSettings() {
-        System.out.println("Settings not built yet");
+        SceneManager.switchTo("Settings.fxml");
     }
 }
