@@ -1,0 +1,41 @@
+{
+  "Insertion Sort": [
+    "for i = 1 to n-1",
+    "    key = arr[i]",
+    "    j = i - 1",
+    "    while j >= 0 and arr[j] > key",
+    "        arr[j+1] = arr[j]",
+    "        j = j - 1",
+    "    arr[j+1] = key"
+  ],
+  "Quick Sort": [
+    "quickSort(arr, low, high):",
+    "    if low < high:",
+    "        pivotIndex = partition(arr, low, high)",
+    "        quickSort(arr, low, pivotIndex-1)",
+    "        quickSort(arr, pivotIndex+1, high)",
+    "",
+    "partition(arr, low, high):",
+    "    pivot = arr[high]",
+    "    for j = low to high-1:",
+    "        if arr[j] < pivot: swap"
+  ],
+  "Dijkstra": [
+    "for each node: distance = infinity",
+    "distance[start] = 0",
+    "while unvisited nodes remain:",
+    "    current = closest unvisited node",
+    "    mark current as visited",
+    "    for each edge (current -> neighbor):",
+    "    if distance[current] + weight < distance[neighbor]:",
+    "        update distance[neighbor]"
+  ],
+  "Bellman-Ford": [
+    "for each node: distance = infinity",
+    "distance[start] = 0",
+    "repeat V-1 times:",
+    "    for each edge (u, v, weight):",
+    "    if distance[u] + weight < distance[v]:",
+    "        update distance[v]"
+  ]
+}

@@ -20,11 +20,13 @@ import com.codecanvas.database.RunDAO;
 import com.codecanvas.model.Run;
 import com.codecanvas.model.QuizQuestion;
 import com.codecanvas.service.QuizGenerator;
+import com.codecanvas.service.PseudocodeProvider;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.application.Platform;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
@@ -63,7 +65,9 @@ public class AlgorithmLabController implements Initializable {
     @FXML private Label narrationLabel;
     private Timeline playTimeline;
     @FXML private ProgressBar progressBar;
-
+    @FXML private VBox pseudocodeBox;
+    //@FXML private Label narrationLabel;
+    private final List<Label> pseudocodeLabels = new ArrayList<>();
     private final RunDAO runDAO = new RunDAO();
     private final QuizResultDAO quizResultDAO = new QuizResultDAO();
     private int quizScore = 0;
@@ -109,7 +113,7 @@ public class AlgorithmLabController implements Initializable {
             System.out.println("No algorithm selected");
             return;
         }
-
+        loadPseudocode(selected);
         currentSteps = null;
         currentGraphSteps = null;
 
@@ -258,6 +262,7 @@ public class AlgorithmLabController implements Initializable {
         theoreticalComplexityLabel.setText("Theoretical: " + currentAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentSteps.size());
         narrationLabel.setText(step.getDescription());
+        highlightLine(step.getCurrentLine());
 
         boolean quizOn = AlgorithmSession.getInstance().isQuizMode();
         boolean everyThirdStep = (currentStepIndex + 1) % 3 == 0;
@@ -342,6 +347,7 @@ public class AlgorithmLabController implements Initializable {
         theoreticalComplexityLabel.setText("Theoretical: " + currentGraphAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentGraphSteps.size());
         narrationLabel.setText(step.getDescription());
+        highlightLine(step.getCurrentLine());
 
         if (currentStepIndex == currentGraphSteps.size() - 1) {
             saveRunToDatabase(currentGraphAlgorithm.getName(), currentGraph.getNodes().size(),
@@ -369,4 +375,27 @@ public class AlgorithmLabController implements Initializable {
         graph.addEdge(new GraphEdge("C", "D", 8));
         return graph;
     }
+
+    private void loadPseudocode(String algorithmName) {
+        pseudocodeBox.getChildren().clear();
+        pseudocodeLabels.clear();
+
+        for (String line : PseudocodeProvider.getLines(algorithmName)) {
+            Label label = new Label(line.isEmpty() ? " " : line);
+            label.setStyle("-fx-font-family: monospace;");
+            pseudocodeLabels.add(label);
+            pseudocodeBox.getChildren().add(label);
+        }
+    }
+
+    private void highlightLine(int lineNumber) {
+        for (int i = 0; i < pseudocodeLabels.size(); i++) {
+            if (i == lineNumber - 1) {
+                pseudocodeLabels.get(i).setStyle("-fx-font-family: monospace; -fx-background-color: #ffe58a;");
+            } else {
+                pseudocodeLabels.get(i).setStyle("-fx-font-family: monospace;");
+            }
+        }
+    }
+
 }

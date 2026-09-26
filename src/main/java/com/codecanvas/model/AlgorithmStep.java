@@ -10,10 +10,11 @@ public class AlgorithmStep {
     private final int comparisons;
     private final int swaps;
     private final String description;
+    private final int currentLine;
 
     public AlgorithmStep(int[] arrayState, List<Integer> comparingIndices,
                          List<Integer> swappingIndices, List<Integer> sortedIndices,
-                         int comparisons, int swaps, String description) {
+                         int comparisons, int swaps, String description, int currentLine) {
         this.arrayState = arrayState.clone();
         this.comparingIndices = comparingIndices;
         this.swappingIndices = swappingIndices;
@@ -21,6 +22,7 @@ public class AlgorithmStep {
         this.comparisons = comparisons;
         this.swaps = swaps;
         this.description = description;
+        this.currentLine = currentLine;
     }
 
     public int[] getArrayState() { return arrayState; }
@@ -30,4 +32,5 @@ public class AlgorithmStep {
     public int getComparisons() { return comparisons; }
     public int getSwaps() { return swaps; }
     public String getDescription() { return description; }
+    public int getCurrentLine() { return currentLine; }
 }
