@@ -11,6 +11,7 @@
     <padding>
         <Insets top="30.0" right="30.0" bottom="30.0" left="30.0" />
     </padding>
+
     <children>
         <Label text="Set Up Input" style="-fx-font-size: 22px;" />
         <Button fx:id="exampleInputButton" text="Example Input" onAction="#handleExampleInput" prefWidth="200.0" />

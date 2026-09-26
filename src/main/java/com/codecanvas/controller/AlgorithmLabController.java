@@ -32,7 +32,8 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.layout.VBox;
-
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
 import com.codecanvas.database.QuizResultDAO;
 import com.codecanvas.model.QuizResult;
+import javafx.util.Duration;
 
 public class AlgorithmLabController implements Initializable {
 
@@ -58,6 +60,8 @@ public class AlgorithmLabController implements Initializable {
     @FXML private Label swapsLabel;
     @FXML private Label executionTimeLabel;
     @FXML private Label theoreticalComplexityLabel;
+    @FXML private Label narrationLabel;
+    private Timeline playTimeline;
     @FXML private ProgressBar progressBar;
 
     private final RunDAO runDAO = new RunDAO();
@@ -92,7 +96,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handleStart() {
-        runSelectedAlgorithm();
+        startAutoPlay();
     }
 
     private void runSelectedAlgorithm() {
@@ -158,6 +162,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handleNext() {
+        if (playTimeline != null) playTimeline.stop();
         if (currentGraphSteps != null) {
             if (currentStepIndex < currentGraphSteps.size() - 1) {
                 currentStepIndex++;
@@ -173,6 +178,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handlePrevious() {
+        if (playTimeline != null) playTimeline.stop();
         if (currentGraphSteps != null) {
             if (currentStepIndex > 0) {
                 currentStepIndex--;
@@ -188,6 +194,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handleRestart() {
+        if (playTimeline != null) playTimeline.stop();
         if (currentGraphSteps != null) {
             currentStepIndex = 0;
             renderCurrentGraphStep();
@@ -199,7 +206,45 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handlePause() {
-        System.out.println("Pause not implemented yet");
+        if (playTimeline != null) {
+            playTimeline.stop();
+        }
+    }
+
+    private void startAutoPlay() {
+        if (playTimeline != null) {
+            playTimeline.stop();
+        }
+        double speed = speedSlider.getValue(); // 1 (slow) to 10 (fast)
+        double intervalMs = 1100 - (speed * 100);
+
+        playTimeline = new Timeline(new KeyFrame(Duration.millis(intervalMs), e -> {
+            boolean advanced = advanceOneStep();
+            if (!advanced) {
+                playTimeline.stop();
+            }
+        }));
+        playTimeline.setCycleCount(Timeline.INDEFINITE);
+        playTimeline.play();
+    }
+
+    private boolean advanceOneStep() {
+        if (currentGraphSteps != null) {
+            if (currentStepIndex < currentGraphSteps.size() - 1) {
+                currentStepIndex++;
+                renderCurrentGraphStep();
+                return true;
+            }
+            return false;
+        } else if (currentSteps != null) {
+            if (currentStepIndex < currentSteps.size() - 1) {
+                currentStepIndex++;
+                renderCurrentStep();
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     private void renderCurrentStep() {
@@ -212,6 +257,7 @@ public class AlgorithmLabController implements Initializable {
         swapsLabel.setText("Swaps: " + step.getSwaps());
         theoreticalComplexityLabel.setText("Theoretical: " + currentAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentSteps.size());
+        narrationLabel.setText(step.getDescription());
 
         boolean quizOn = AlgorithmSession.getInstance().isQuizMode();
         boolean everyThirdStep = (currentStepIndex + 1) % 3 == 0;
@@ -295,6 +341,7 @@ public class AlgorithmLabController implements Initializable {
         swapsLabel.setText("Relaxations: " + step.getRelaxations());
         theoreticalComplexityLabel.setText("Theoretical: " + currentGraphAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentGraphSteps.size());
+        narrationLabel.setText(step.getDescription());
 
         if (currentStepIndex == currentGraphSteps.size() - 1) {
             saveRunToDatabase(currentGraphAlgorithm.getName(), currentGraph.getNodes().size(),

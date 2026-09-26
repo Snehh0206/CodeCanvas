@@ -15,6 +15,6 @@ public class RaceCategorySelectController {
     @FXML
     private void handleGraph() {
         RaceSession.getInstance().setCategory("Graph");
-        SceneManager.switchTo("RaceAlgorithmSelect.fxml");
+        SceneManager.switchTo("RaceModeSelect.fxml");
     }
 }

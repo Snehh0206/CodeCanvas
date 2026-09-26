@@ -112,4 +112,17 @@ public class RunDAO {
         );
     }
 
+    public int countRunsForAlgorithm(String algorithm) {
+        String sql = "SELECT COUNT(*) as cnt FROM runs WHERE algorithm = ?";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, algorithm);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt("cnt");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    
+
 }

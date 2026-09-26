@@ -47,4 +47,17 @@ public class QuizResultDAO {
         }
         return results;
     }
+
+    public int[] getQuizTotalsForAlgorithm(String algorithm) {
+        String sql = "SELECT SUM(score) as s, SUM(total_questions) as t FROM quiz_results WHERE algorithm = ?";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, algorithm);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new int[]{rs.getInt("s"), rs.getInt("t")};
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return new int[]{0, 0};
+    }
 }

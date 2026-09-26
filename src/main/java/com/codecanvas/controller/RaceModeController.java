@@ -12,6 +12,7 @@ import com.codecanvas.service.AppExecutor;
 import com.codecanvas.service.GraphInputParser;
 import com.codecanvas.service.SceneManager;
 import com.codecanvas.service.InputGenerator;
+import com.codecanvas.service.GraphCaseGenerator;
 import com.codecanvas.visualization.BarVisualizer;
 import com.codecanvas.visualization.GraphVisualizer;
 
@@ -142,7 +143,7 @@ public class RaceModeController implements Initializable {
             AlgorithmStep step = steps.get(i);
             int stepIndex = i;
 
-            KeyFrame frame = new KeyFrame(Duration.millis(150.0 * i), event -> {
+            KeyFrame frame = new KeyFrame(Duration.millis(350.0 * i), event -> {
                 visualizer.animateToStep(step);
                 progressBar.setProgress((stepIndex + 1) / (double) steps.size());
                 statsLabel.setText("Comparisons: " + step.getComparisons() + " | Swaps: " + step.getSwaps());
@@ -228,7 +229,7 @@ public class RaceModeController implements Initializable {
             GraphStep step = steps.get(i);
             int stepIndex = i;
 
-            KeyFrame frame = new KeyFrame(Duration.millis(150.0 * i), event -> {
+            KeyFrame frame = new KeyFrame(Duration.millis(450.0 * i), event -> {
                 visualizer.animateToStep(step);
                 progressBar.setProgress((stepIndex + 1) / (double) steps.size());
                 statsLabel.setText("Comparisons: " + step.getComparisons() + " | Relaxations: " + step.getRelaxations());
@@ -262,7 +263,7 @@ public class RaceModeController implements Initializable {
 
     // ---------- CASE BATTLE ----------
 
-    private void runCaseBattle(RaceSession session) {
+    private void runSortingCaseBattle(RaceSession session) {
         String name1 = session.getAlgorithm1Name();
         String name2 = session.getAlgorithm2Name();
         String case1 = session.getCase1();
@@ -313,6 +314,73 @@ public class RaceModeController implements Initializable {
                 playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
             });
         });
+    }
+
+    private void runCaseBattle(RaceSession session) {
+        if (session.getCategory().equals("Graph")) {
+            runGraphCaseBattle(session);
+        } else {
+            runSortingCaseBattle(session);
+        }
+    }
+
+    private void runGraphCaseBattle(RaceSession session) {
+        String name1 = session.getAlgorithm1Name();
+        String name2 = session.getAlgorithm2Name();
+        String case1 = session.getCase1();
+        String case2 = session.getCase2();
+        int vertexCount = session.getBattleInputSize();
+
+        Graph graph1 = GraphCaseGenerator.generate(case1, vertexCount);
+        Graph graph2 = GraphCaseGenerator.generate(case2, vertexCount);
+
+        GraphAlgorithm algo1 = createGraphAlgorithm(name1);
+        GraphAlgorithm algo2 = createGraphAlgorithm(name2);
+
+        algorithm1NameLabel.setText(name1 + " (" + case1 + ")");
+        algorithm2NameLabel.setText(name2 + " (" + case2 + ")");
+        timeComplexity1Label.setText("Complexity: " + algo1.getTheoreticalComplexity());
+        timeComplexity2Label.setText("Complexity: " + algo2.getTheoreticalComplexity());
+        resultLabel.setText("Racing...");
+
+        graphVisualizer1.initialize(visualizationPane1, graph1);
+        graphVisualizer2.initialize(visualizationPane2, graph2);
+
+        AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
+            long start = System.nanoTime();
+            List<GraphStep> steps = algo1.run(graph1, "0");
+            time1Micros = (System.nanoTime() - start) / 1_000;
+
+            GraphStep last = steps.get(steps.size() - 1);
+            saveGraphRun(name1, case1, vertexCount, steps.size(), last.getComparisons(), last.getRelaxations(), time1Micros);
+
+            Platform.runLater(() -> {
+                thread1Label.setText("Thread: " + threadName);
+                playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
+            });
+        });
+
+        AppExecutor.submit(() -> {
+            String threadName = Thread.currentThread().getName();
+            long start = System.nanoTime();
+            List<GraphStep> steps = algo2.run(graph2, "0");
+            time2Micros = (System.nanoTime() - start) / 1_000;
+
+            GraphStep last = steps.get(steps.size() - 1);
+            saveGraphRun(name2, case2, vertexCount, steps.size(), last.getComparisons(), last.getRelaxations(), time2Micros);
+
+            Platform.runLater(() -> {
+                thread2Label.setText("Thread: " + threadName);
+                playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+            });
+        });
+    }
+
+    private void saveGraphRun(String algorithm, String caseType, int vertexCount, int steps, int comparisons, int relaxations, long micros) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Run run = new Run(algorithm, caseType, vertexCount, steps, comparisons, relaxations, micros, timestamp);
+        runDAO.insertRun(run);
     }
 
     private void saveRun(String algorithm, String caseType, int size, int steps, int comparisons, int swaps, long micros) {
