@@ -16,6 +16,7 @@
         <Label text="Set Up Input" style="-fx-font-size: 22px;" />
         <Button fx:id="exampleInputButton" text="Example Input" onAction="#handleExampleInput" prefWidth="200.0" />
         <Button fx:id="customInputButton" text="Custom Input" onAction="#handleCustomInputToggle" prefWidth="200.0" />
+        <Button fx:id="fetchLiveDataButton" text="Use Live Bitcoin Prices" onAction="#handleFetchLiveData" />
         <TextField fx:id="customInputField" promptText="e.g. 5,3,8,1" disable="true" />
 
         <Label text="Graph Input (Dijkstra/Bellman-Ford only)" />

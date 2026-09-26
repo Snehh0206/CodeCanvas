@@ -7,6 +7,8 @@ public class AppSettings {
     private boolean darkMode = false;
     private boolean soundEnabled = true;
     private boolean animationEnabled = true;
+    private String quizDifficulty = "medium";
+    private int defaultSpeed = 5;
 
     private AppSettings() {}
 
@@ -20,4 +22,10 @@ public class AppSettings {
 
     public boolean isAnimationEnabled() { return animationEnabled; }
     public void setAnimationEnabled(boolean animationEnabled) { this.animationEnabled = animationEnabled; }
+
+    public String getQuizDifficulty() { return quizDifficulty; }
+    public void setQuizDifficulty(String quizDifficulty) { this.quizDifficulty = quizDifficulty; }
+
+    public int getDefaultSpeed() { return defaultSpeed; }
+    public void setDefaultSpeed(int defaultSpeed) { this.defaultSpeed = defaultSpeed; }
 }
