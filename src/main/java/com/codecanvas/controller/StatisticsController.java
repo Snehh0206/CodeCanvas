@@ -19,13 +19,18 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class StatisticsController implements Initializable {
+public class StatisticsController extends BaseController implements Initializable {
 
-    @FXML private ComboBox<String> algorithmComboBox;
-    @FXML private LineChart<Number, Number> stepsChart;
-    @FXML private NumberAxis xAxis;
-    @FXML private NumberAxis yAxis;
-    @FXML private Label noteLabel;
+    @FXML
+    private ComboBox<String> algorithmComboBox;
+    @FXML
+    private LineChart<Number, Number> stepsChart;
+    @FXML
+    private NumberAxis xAxis;
+    @FXML
+    private NumberAxis yAxis;
+    @FXML
+    private Label noteLabel;
 
     private final RunDAO runDAO = new RunDAO();
 
@@ -71,13 +76,4 @@ public class StatisticsController implements Initializable {
         });
     }
 
-    @FXML
-    private void handleBack() {
-        SceneManager.goBack();
-    }
-
-    @FXML
-    private void handleDashboard() {
-        SceneManager.goToDashboard();
-    }
 }

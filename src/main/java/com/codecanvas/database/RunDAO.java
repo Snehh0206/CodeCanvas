@@ -8,11 +8,11 @@ import java.util.List;
 
 public class RunDAO {
 
-    public void insertRun(Run run) {
-        String sql = "INSERT INTO runs (algorithm, case_type, input_size, steps, comparisons, swaps, execution_time_micros, run_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public int insertRun(Run run) {
+        String sql = "INSERT INTO runs (algorithm, case_type, input_size, steps, comparisons, swaps, execution_time_micros, run_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseHelper.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, run.getAlgorithm());
             stmt.setString(2, run.getCaseType());
@@ -22,11 +22,18 @@ public class RunDAO {
             stmt.setInt(6, run.getSwaps());
             stmt.setLong(7, run.getExecutionTimeMicros());
             stmt.setString(8, run.getRunDate());
+            stmt.setString(9, run.getNotes());
 
             stmt.executeUpdate();
+
+            ResultSet keys = stmt.getGeneratedKeys();
+            if (keys.next()) {
+                return keys.getInt(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return -1;
     }
 
     public List<Run> getAllRuns() {
@@ -111,5 +118,30 @@ public class RunDAO {
                 rs.getString("run_date")
         );
     }
+
+    public void updateNotes(int runId, String notes) {
+        String sql = "UPDATE runs SET notes = ? WHERE id = ?";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, notes);
+            stmt.setInt(2, runId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int countRunsForAlgorithm(String algorithm) {
+        String sql = "SELECT COUNT(*) as cnt FROM runs WHERE algorithm = ?";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, algorithm);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt("cnt");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
+
+
 
 }

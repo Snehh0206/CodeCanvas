@@ -2,10 +2,15 @@ package com.codecanvas.controller;
 
 import com.codecanvas.model.AlgorithmSession;
 import com.codecanvas.service.SceneManager;
+import com.codecanvas.service.SceneManager;
 import javafx.fxml.FXML;
 
 public class AlgorithmSelectController {
+    @FXML
+    private void handleBack() { SceneManager.goBack(); }
 
+    @FXML
+    private void handleDashboard() { SceneManager.goToDashboard(); }
     @FXML
     private void handleInsertionSort() { selectAndProceed("Insertion Sort"); }
 

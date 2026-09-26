@@ -20,11 +20,13 @@ import com.codecanvas.database.RunDAO;
 import com.codecanvas.model.Run;
 import com.codecanvas.model.QuizQuestion;
 import com.codecanvas.service.QuizGenerator;
+import com.codecanvas.service.PseudocodeProvider;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.application.Platform;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
@@ -32,7 +34,8 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.layout.VBox;
-
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -41,6 +44,7 @@ import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
 import com.codecanvas.database.QuizResultDAO;
 import com.codecanvas.model.QuizResult;
+import javafx.util.Duration;
 
 public class AlgorithmLabController implements Initializable {
 
@@ -58,12 +62,17 @@ public class AlgorithmLabController implements Initializable {
     @FXML private Label swapsLabel;
     @FXML private Label executionTimeLabel;
     @FXML private Label theoreticalComplexityLabel;
+    @FXML private Label narrationLabel;
+    private Timeline playTimeline;
     @FXML private ProgressBar progressBar;
-
+    @FXML private VBox pseudocodeBox;
+    //@FXML private Label narrationLabel;
+    private final List<Label> pseudocodeLabels = new ArrayList<>();
     private final RunDAO runDAO = new RunDAO();
     private final QuizResultDAO quizResultDAO = new QuizResultDAO();
     private int quizScore = 0;
     private int quizTotal = 0;
+    private int lastRunId = -1;
 
     private int[] currentInput = {5, 2, 9, 1, 5, 6};
     private int currentStepIndex = 0;
@@ -81,6 +90,8 @@ public class AlgorithmLabController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        visualizationPane.prefWidthProperty().bind(((javafx.scene.layout.Region) visualizationPane.getParent()).widthProperty());
+        visualizationPane.prefHeightProperty().bind(((javafx.scene.layout.Region) visualizationPane.getParent()).heightProperty());
         AlgorithmSession session = AlgorithmSession.getInstance();
 
         if (session.isCustomInput() && session.getCustomValues() != null) {
@@ -92,7 +103,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handleStart() {
-        runSelectedAlgorithm();
+        startAutoPlay();
     }
 
     private void runSelectedAlgorithm() {
@@ -105,7 +116,7 @@ public class AlgorithmLabController implements Initializable {
             System.out.println("No algorithm selected");
             return;
         }
-
+        loadPseudocode(selected);
         currentSteps = null;
         currentGraphSteps = null;
 
@@ -158,6 +169,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handleNext() {
+        if (playTimeline != null) playTimeline.stop();
         if (currentGraphSteps != null) {
             if (currentStepIndex < currentGraphSteps.size() - 1) {
                 currentStepIndex++;
@@ -173,6 +185,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handlePrevious() {
+        if (playTimeline != null) playTimeline.stop();
         if (currentGraphSteps != null) {
             if (currentStepIndex > 0) {
                 currentStepIndex--;
@@ -188,6 +201,7 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handleRestart() {
+        if (playTimeline != null) playTimeline.stop();
         if (currentGraphSteps != null) {
             currentStepIndex = 0;
             renderCurrentGraphStep();
@@ -199,7 +213,45 @@ public class AlgorithmLabController implements Initializable {
 
     @FXML
     private void handlePause() {
-        System.out.println("Pause not implemented yet");
+        if (playTimeline != null) {
+            playTimeline.stop();
+        }
+    }
+
+    private void startAutoPlay() {
+        if (playTimeline != null) {
+            playTimeline.stop();
+        }
+        double speed = speedSlider.getValue(); // 1 (slow) to 10 (fast)
+        double intervalMs = 1100 - (speed * 100);
+
+        playTimeline = new Timeline(new KeyFrame(Duration.millis(intervalMs), e -> {
+            boolean advanced = advanceOneStep();
+            if (!advanced) {
+                playTimeline.stop();
+            }
+        }));
+        playTimeline.setCycleCount(Timeline.INDEFINITE);
+        playTimeline.play();
+    }
+
+    private boolean advanceOneStep() {
+        if (currentGraphSteps != null) {
+            if (currentStepIndex < currentGraphSteps.size() - 1) {
+                currentStepIndex++;
+                renderCurrentGraphStep();
+                return true;
+            }
+            return false;
+        } else if (currentSteps != null) {
+            if (currentStepIndex < currentSteps.size() - 1) {
+                currentStepIndex++;
+                renderCurrentStep();
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     private void renderCurrentStep() {
@@ -212,6 +264,8 @@ public class AlgorithmLabController implements Initializable {
         swapsLabel.setText("Swaps: " + step.getSwaps());
         theoreticalComplexityLabel.setText("Theoretical: " + currentAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentSteps.size());
+        narrationLabel.setText(step.getDescription());
+        highlightLine(step.getCurrentLine());
 
         boolean quizOn = AlgorithmSession.getInstance().isQuizMode();
         boolean everyThirdStep = (currentStepIndex + 1) % 3 == 0;
@@ -281,10 +335,9 @@ public class AlgorithmLabController implements Initializable {
 
     private void saveQuizResult() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        QuizResult result = new QuizResult(currentAlgorithm.getName(), quizScore, quizTotal, timestamp);
+        QuizResult result = new QuizResult(lastRunId, currentAlgorithm.getName(), quizScore, quizTotal, timestamp);
         AppExecutor.submit(() -> quizResultDAO.insertResult(result));
     }
-
     private void renderCurrentGraphStep() {
         GraphStep step = currentGraphSteps.get(currentStepIndex);
         graphVisualizer.animateToStep(step);
@@ -295,6 +348,8 @@ public class AlgorithmLabController implements Initializable {
         swapsLabel.setText("Relaxations: " + step.getRelaxations());
         theoreticalComplexityLabel.setText("Theoretical: " + currentGraphAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentGraphSteps.size());
+        narrationLabel.setText(step.getDescription());
+        highlightLine(step.getCurrentLine());
 
         if (currentStepIndex == currentGraphSteps.size() - 1) {
             saveRunToDatabase(currentGraphAlgorithm.getName(), currentGraph.getNodes().size(),
@@ -305,7 +360,10 @@ public class AlgorithmLabController implements Initializable {
     private void saveRunToDatabase(String algorithmName, int inputSize, int steps, int comparisons, int swaps) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         Run run = new Run(algorithmName, "Custom", inputSize, steps, comparisons, swaps, 0, timestamp);
-        AppExecutor.submit(() -> runDAO.insertRun(run));
+        AppExecutor.submit(() -> {
+            int newRunId = runDAO.insertRun(run);
+            Platform.runLater(() -> lastRunId = newRunId);
+        });
     }
 
     private Graph buildExampleGraph() {
@@ -322,4 +380,27 @@ public class AlgorithmLabController implements Initializable {
         graph.addEdge(new GraphEdge("C", "D", 8));
         return graph;
     }
+
+    private void loadPseudocode(String algorithmName) {
+        pseudocodeBox.getChildren().clear();
+        pseudocodeLabels.clear();
+
+        for (String line : PseudocodeProvider.getLines(algorithmName)) {
+            Label label = new Label(line.isEmpty() ? " " : line);
+            label.setStyle("-fx-font-family: monospace;");
+            pseudocodeLabels.add(label);
+            pseudocodeBox.getChildren().add(label);
+        }
+    }
+
+    private void highlightLine(int lineNumber) {
+        for (int i = 0; i < pseudocodeLabels.size(); i++) {
+            if (i == lineNumber - 1) {
+                pseudocodeLabels.get(i).setStyle("-fx-font-family: monospace; -fx-background-color: #ffe58a;");
+            } else {
+                pseudocodeLabels.get(i).setStyle("-fx-font-family: monospace;");
+            }
+        }
+    }
+
 }

@@ -12,20 +12,20 @@ import javafx.scene.control.TextField;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class CaseBattleSelectController extends BaseController implements Initializable {
+public class GraphCaseBattleSelectController extends BaseController implements Initializable {
 
     @FXML private ComboBox<String> algorithmAComboBox;
     @FXML private ComboBox<String> caseAComboBox;
     @FXML private ComboBox<String> algorithmBComboBox;
     @FXML private ComboBox<String> caseBComboBox;
-    @FXML private TextField inputSizeField;
+    @FXML private TextField vertexCountField;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        algorithmAComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort"));
-        algorithmBComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort"));
-        caseAComboBox.setItems(FXCollections.observableArrayList("Best Case", "Average Case", "Worst Case"));
-        caseBComboBox.setItems(FXCollections.observableArrayList("Best Case", "Average Case", "Worst Case"));
+        algorithmAComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford"));
+        algorithmBComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford"));
+        caseAComboBox.setItems(FXCollections.observableArrayList("Sparse Graph", "Dense Graph"));
+        caseBComboBox.setItems(FXCollections.observableArrayList("Sparse Graph", "Dense Graph"));
     }
 
     @FXML
@@ -40,12 +40,12 @@ public class CaseBattleSelectController extends BaseController implements Initia
             return;
         }
 
-        int size;
+        int vertexCount;
         try {
-            size = Integer.parseInt(inputSizeField.getText().trim());
-            if (size < 2 || size > 50) throw new NumberFormatException();
+            vertexCount = Integer.parseInt(vertexCountField.getText().trim());
+            if (vertexCount < 3 || vertexCount > 15) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.ERROR, "Enter a size between 2 and 50").showAndWait();
+            new Alert(Alert.AlertType.ERROR, "Enter a vertex count between 3 and 15").showAndWait();
             return;
         }
 
@@ -55,7 +55,7 @@ public class CaseBattleSelectController extends BaseController implements Initia
         session.setCaseBattle(true);
         session.setCase1(caseA);
         session.setCase2(caseB);
-        session.setBattleInputSize(size);
+        session.setBattleInputSize(vertexCount);
 
         SceneManager.switchTo("RaceMode.fxml");
     }

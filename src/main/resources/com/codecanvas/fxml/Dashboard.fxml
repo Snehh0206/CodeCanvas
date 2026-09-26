@@ -22,6 +22,7 @@
             <Button fx:id="quizButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleQuiz" prefWidth="150.0" text="Quiz" />
             <Button fx:id="historyButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleHistory" prefWidth="150.0" text="History" />
             <Button fx:id="statisticsButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleStatistics" prefWidth="150.0" text="Statistics" />
+            <Button fx:id="masteryMapButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleMasteryMap" prefWidth="150.0" text="Mastery Map" />
             <Button fx:id="settingsButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleSettings" prefWidth="150.0" text="Settings" />
          </children>
       </VBox>

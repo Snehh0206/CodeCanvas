@@ -22,17 +22,21 @@ public class QuickSort implements Algorithm {
         int[] arr = input.clone();
 
         steps.add(new AlgorithmStep(arr, List.of(), List.of(), new ArrayList<>(sorted),
-                comparisons, swaps, "Start"));
+                comparisons, swaps, "Start", 1));
         quickSort(arr, 0, arr.length - 1);
         return steps;
     }
 
     private void quickSort(int[] arr, int low, int high) {
+        steps.add(new AlgorithmStep(arr, List.of(), List.of(), new ArrayList<>(sorted),
+                comparisons, swaps, "Checking if low(" + low + ") < high(" + high + ")", 2));
+
         if (low < high) {
             int pivotIndex = partition(arr, low, high);
             sorted.add(pivotIndex);
             steps.add(new AlgorithmStep(arr, List.of(), List.of(), new ArrayList<>(sorted),
-                    comparisons, swaps, "Pivot " + arr[pivotIndex] + " placed in final position"));
+                    comparisons, swaps, "Pivot " + arr[pivotIndex] + " placed in final position", 3));
+
             quickSort(arr, low, pivotIndex - 1);
             quickSort(arr, pivotIndex + 1, high);
         } else if (low == high) {
@@ -42,23 +46,26 @@ public class QuickSort implements Algorithm {
 
     private int partition(int[] arr, int low, int high) {
         int pivot = arr[high];
+        steps.add(new AlgorithmStep(arr, List.of(high), List.of(), new ArrayList<>(sorted),
+                comparisons, swaps, "pivot = arr[high] = " + pivot, 8));
+
         int i = low - 1;
 
         for (int j = low; j < high; j++) {
             comparisons++;
             steps.add(new AlgorithmStep(arr, List.of(j, high), List.of(), new ArrayList<>(sorted),
-                    comparisons, swaps, "Comparing " + arr[j] + " with pivot " + pivot));
+                    comparisons, swaps, "Comparing arr[j]=" + arr[j] + " with pivot=" + pivot, 9));
 
             if (arr[j] < pivot) {
                 i++;
                 swap(arr, i, j);
                 steps.add(new AlgorithmStep(arr, List.of(), List.of(i, j), new ArrayList<>(sorted),
-                        comparisons, swaps, "Swapped " + arr[i] + " and " + arr[j]));
+                        comparisons, swaps, "Swapped " + arr[i] + " and " + arr[j], 9));
             }
         }
         swap(arr, i + 1, high);
         steps.add(new AlgorithmStep(arr, List.of(), List.of(i + 1, high), new ArrayList<>(sorted),
-                comparisons, swaps, "Placed pivot " + pivot));
+                comparisons, swaps, "Placed pivot " + pivot + " at final position", 10));
         return i + 1;
     }
 

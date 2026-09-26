@@ -41,6 +41,10 @@ public class DashboardController {
     private void handleStatistics() {
         SceneManager.switchTo("Statistics.fxml");
     }
+    @FXML
+    private void handleMasteryMap() {
+        SceneManager.switchTo("MasteryMap.fxml");
+    }
 
     @FXML
     private void handleSettings() {
