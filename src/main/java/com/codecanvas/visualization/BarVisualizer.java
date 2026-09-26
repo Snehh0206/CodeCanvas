@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import com.codecanvas.model.AppSettings;
 import com.codecanvas.service.SoundManager;
 
 public class BarVisualizer {
@@ -68,15 +69,18 @@ public class BarVisualizer {
             double targetHeight = (array[i] / (double) max) * PANE_HEIGHT;
             double targetY = PANE_HEIGHT - targetHeight;
 
+            boolean animate = AppSettings.getInstance().isAnimationEnabled();
+            Duration duration = animate ? ANIMATION_DURATION : Duration.ZERO;
+
             Timeline sizeTimeline = new Timeline(
-                    new KeyFrame(ANIMATION_DURATION,
+                    new KeyFrame(duration,
                             new KeyValue(bar.heightProperty(), targetHeight),
                             new KeyValue(bar.yProperty(), targetY))
             );
             sizeTimeline.play();
 
             Color targetColor = colorFor(i, step);
-            new FillTransition(ANIMATION_DURATION, bar, (Color) bar.getFill(), targetColor).play();
+            new FillTransition(duration, bar, (Color) bar.getFill(), targetColor).play();
 
             valueLabels[i].setText(String.valueOf(array[i]));
             valueLabels[i].setLayoutY(targetY - 18);

@@ -1,5 +1,6 @@
 package com.codecanvas.service;
 
+import com.codecanvas.model.AppSettings;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -19,7 +20,6 @@ public class SceneManager {
         primaryStage = stage;
     }
 
-    // Normal navigation — remembers where you came from
     public static void switchTo(String fxmlFileName) {
         if (currentFxml != null) {
             history.push(currentFxml);
@@ -27,7 +27,6 @@ public class SceneManager {
         load(fxmlFileName);
     }
 
-    // Goes back one screen — does not add to history (avoids forward-back loops)
     public static void goBack() {
         if (!history.isEmpty()) {
             String previous = history.pop();
@@ -35,10 +34,16 @@ public class SceneManager {
         }
     }
 
-    // Jumps straight to Dashboard and clears history (fresh start point)
     public static void goToDashboard() {
         history.clear();
         load("Dashboard.fxml");
+    }
+
+    // Reapplies the current theme without navigating — called after toggling in Settings
+    public static void refreshTheme() {
+        if (primaryStage != null && primaryStage.getScene() != null) {
+            applyTheme(primaryStage.getScene());
+        }
     }
 
     private static void load(String fxmlFileName) {
@@ -56,10 +61,17 @@ public class SceneManager {
                 scene.setRoot(root);
             }
 
+            applyTheme(scene);
             currentFxml = fxmlFileName;
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void applyTheme(Scene scene) {
+        scene.getStylesheets().clear();
+        String cssFile = AppSettings.getInstance().isDarkMode() ? "dark-theme.css" : "light-theme.css";
+        scene.getStylesheets().add(SceneManager.class.getResource("/com/codecanvas/css/" + cssFile).toExternalForm());
     }
 }
