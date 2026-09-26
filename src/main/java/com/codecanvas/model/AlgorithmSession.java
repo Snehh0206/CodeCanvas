@@ -1,5 +1,8 @@
 package com.codecanvas.model;
 
+import com.codecanvas.model.QuizQuestion;
+import java.util.List;
+
 public class AlgorithmSession {
 
     private static final AlgorithmSession instance = new AlgorithmSession();
@@ -11,7 +14,18 @@ public class AlgorithmSession {
     private boolean customGraph;
     private int vertexCount;
     private String edgesText;
+    private List<QuizQuestion> quizQuestions;
+    private int quizScore = 0;
+    private int quizQuestionsAnswered = 0;
 
+    public List<QuizQuestion> getQuizQuestions() { return quizQuestions; }
+    public void setQuizQuestions(List<QuizQuestion> questions) { this.quizQuestions = questions; }
+
+    public int getQuizScore() { return quizScore; }
+    public void setQuizScore(int quizScore) { this.quizScore = quizScore; }
+
+    public int getQuizQuestionsAnswered() { return quizQuestionsAnswered; }
+    public void setQuizQuestionsAnswered(int answered) { this.quizQuestionsAnswered = answered; }
     public boolean isCustomGraph() { return customGraph; }
     public void setCustomGraph(boolean customGraph) { this.customGraph = customGraph; }
 

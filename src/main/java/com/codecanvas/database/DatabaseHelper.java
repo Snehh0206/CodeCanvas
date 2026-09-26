@@ -27,11 +27,20 @@ public class DatabaseHelper {
                 run_date TEXT
             );
         """;
-
+        String createQuizTable = """
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            algorithm TEXT,
+            score INTEGER,
+            total_questions INTEGER,
+            quiz_date TEXT
+        );
+    """;
         try (Connection conn = connect();
              Statement stmt = conn.createStatement()) {
             stmt.execute(createRunsTable);
-            System.out.println("Database ready: runs table exists");
+            stmt.execute(createQuizTable);
+            System.out.println("Database ready: runs and quiz table exists");
         } catch (SQLException e) {
             e.printStackTrace();
         }

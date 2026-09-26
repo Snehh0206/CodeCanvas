@@ -16,24 +16,34 @@ import com.codecanvas.visualization.BarVisualizer;
 import com.codecanvas.visualization.GraphVisualizer;
 import com.codecanvas.service.GraphInputParser;
 import com.codecanvas.service.AppExecutor;
-import com.codecanvas.service.GraphInputParser;
 import com.codecanvas.database.RunDAO;
 import com.codecanvas.model.Run;
+import com.codecanvas.model.QuizQuestion;
+import com.codecanvas.service.QuizGenerator;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.application.Platform;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.time.format.DateTimeFormatter;
+import com.codecanvas.database.QuizResultDAO;
+import com.codecanvas.model.QuizResult;
+
 public class AlgorithmLabController implements Initializable {
 
-  //  @FXML private ComboBox<String> algorithmComboBox;
     @FXML private Pane visualizationPane;
     @FXML private Button startButton;
     @FXML private Button pauseButton;
@@ -49,7 +59,11 @@ public class AlgorithmLabController implements Initializable {
     @FXML private Label executionTimeLabel;
     @FXML private Label theoreticalComplexityLabel;
     @FXML private ProgressBar progressBar;
+
     private final RunDAO runDAO = new RunDAO();
+    private final QuizResultDAO quizResultDAO = new QuizResultDAO();
+    private int quizScore = 0;
+    private int quizTotal = 0;
 
     private int[] currentInput = {5, 2, 9, 1, 5, 6};
     private int currentStepIndex = 0;
@@ -69,8 +83,6 @@ public class AlgorithmLabController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         AlgorithmSession session = AlgorithmSession.getInstance();
 
-        //algorithmComboBox.setValue(session.getSelectedAlgorithm());
-
         if (session.isCustomInput() && session.getCustomValues() != null) {
             currentInput = session.getCustomValues();
         }
@@ -84,6 +96,8 @@ public class AlgorithmLabController implements Initializable {
     }
 
     private void runSelectedAlgorithm() {
+        quizScore = 0;
+        quizTotal = 0;
         AlgorithmSession session = AlgorithmSession.getInstance();
         String selected = session.getSelectedAlgorithm();
 
@@ -109,19 +123,13 @@ public class AlgorithmLabController implements Initializable {
 
             String finalStartNode = startNode;
             AppExecutor.submit(() -> {
-                List<AlgorithmStep> computedSteps = currentAlgorithm.run(currentInput);
-
-                AlgorithmStep lastStep = computedSteps.get(computedSteps.size() - 1);
-                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                Run run = new Run(currentAlgorithm.getName(), "Custom", currentInput.length,
-                        computedSteps.size(), lastStep.getComparisons(), lastStep.getSwaps(), 0, timestamp);
-                runDAO.insertRun(run);
+                List<GraphStep> computedSteps = currentGraphAlgorithm.run(currentGraph, finalStartNode);
 
                 Platform.runLater(() -> {
-                    currentSteps = computedSteps;
+                    currentGraphSteps = computedSteps;
                     currentStepIndex = 0;
-                    visualizer.initialize(visualizationPane, currentInput);
-                    renderCurrentStep();
+                    graphVisualizer.initialize(visualizationPane, currentGraph);
+                    renderCurrentGraphStep();
                 });
             });
 
@@ -188,6 +196,7 @@ public class AlgorithmLabController implements Initializable {
             renderCurrentStep();
         }
     }
+
     @FXML
     private void handlePause() {
         System.out.println("Pause not implemented yet");
@@ -203,6 +212,77 @@ public class AlgorithmLabController implements Initializable {
         swapsLabel.setText("Swaps: " + step.getSwaps());
         theoreticalComplexityLabel.setText("Theoretical: " + currentAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentSteps.size());
+
+        boolean quizOn = AlgorithmSession.getInstance().isQuizMode();
+        boolean everyThirdStep = (currentStepIndex + 1) % 3 == 0;
+        boolean hasNextStep = currentStepIndex < currentSteps.size() - 1;
+
+        if (quizOn && everyThirdStep && hasNextStep) {
+            showQuizPopup(step, currentSteps.get(currentStepIndex + 1));
+        }
+
+        if (currentStepIndex == currentSteps.size() - 1) {
+            saveRunToDatabase(currentAlgorithm.getName(), currentInput.length, currentSteps.size(),
+                    step.getComparisons(), step.getSwaps());
+
+            if (quizOn && quizTotal > 0) {
+                saveQuizResult();
+            }
+        }
+    }
+
+    private void showQuizPopup(AlgorithmStep currentStep, AlgorithmStep nextStep) {
+        QuizQuestion question = QuizGenerator.buildQuestion(currentStep, nextStep);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Quiz");
+        dialog.setHeaderText(question.getQuestionText());
+
+        ToggleGroup group = new ToggleGroup();
+        VBox optionsBox = new VBox(8);
+        List<RadioButton> radioButtons = new ArrayList<>();
+
+        for (String option : question.getOptions()) {
+            RadioButton rb = new RadioButton(option);
+            rb.setToggleGroup(group);
+            radioButtons.add(rb);
+            optionsBox.getChildren().add(rb);
+        }
+
+        dialog.getDialogPane().setContent(optionsBox);
+        ButtonType submitButtonType = new ButtonType("Submit", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().add(submitButtonType);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == submitButtonType) {
+                int selectedIndex = -1;
+                for (int i = 0; i < radioButtons.size(); i++) {
+                    if (radioButtons.get(i).isSelected()) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+
+                quizTotal++;
+                if (selectedIndex == question.getCorrectOptionIndex()) {
+                    quizScore++;
+                    new Alert(Alert.AlertType.INFORMATION, "Correct!").showAndWait();
+                } else {
+                    new Alert(Alert.AlertType.INFORMATION,
+                            "Not quite — correct answer was: " + question.getOptions().get(question.getCorrectOptionIndex()))
+                            .showAndWait();
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
+    }
+
+    private void saveQuizResult() {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        QuizResult result = new QuizResult(currentAlgorithm.getName(), quizScore, quizTotal, timestamp);
+        AppExecutor.submit(() -> quizResultDAO.insertResult(result));
     }
 
     private void renderCurrentGraphStep() {
@@ -215,6 +295,17 @@ public class AlgorithmLabController implements Initializable {
         swapsLabel.setText("Relaxations: " + step.getRelaxations());
         theoreticalComplexityLabel.setText("Theoretical: " + currentGraphAlgorithm.getTheoreticalComplexity());
         progressBar.setProgress((currentStepIndex + 1) / (double) currentGraphSteps.size());
+
+        if (currentStepIndex == currentGraphSteps.size() - 1) {
+            saveRunToDatabase(currentGraphAlgorithm.getName(), currentGraph.getNodes().size(),
+                    currentGraphSteps.size(), step.getComparisons(), step.getRelaxations());
+        }
+    }
+
+    private void saveRunToDatabase(String algorithmName, int inputSize, int steps, int comparisons, int swaps) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Run run = new Run(algorithmName, "Custom", inputSize, steps, comparisons, swaps, 0, timestamp);
+        AppExecutor.submit(() -> runDAO.insertRun(run));
     }
 
     private Graph buildExampleGraph() {
