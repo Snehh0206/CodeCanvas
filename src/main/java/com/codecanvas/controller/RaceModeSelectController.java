@@ -4,7 +4,7 @@ import com.codecanvas.model.RaceSession;
 import com.codecanvas.service.SceneManager;
 import javafx.fxml.FXML;
 
-public class RaceModeSelectController {
+public class RaceModeSelectController extends BaseController {
 
     @FXML
     private void handleUserInput() {
@@ -21,9 +21,5 @@ public class RaceModeSelectController {
         }
     }
 
-    @FXML
-    private void handleBack() { SceneManager.goBack(); }
 
-    @FXML
-    private void handleDashboard() { SceneManager.goToDashboard(); }
 }

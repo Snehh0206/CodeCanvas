@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class RaceModeController implements Initializable {
+public class RaceModeController extends BaseController implements Initializable {
 
     @FXML private Label algorithm1NameLabel;
     @FXML private Label algorithm2NameLabel;
@@ -456,15 +456,5 @@ public class RaceModeController implements Initializable {
             case "Bellman-Ford" -> new BellmanFord();
             default -> null;
         };
-    }
-
-    @FXML
-    private void handleBack() {
-        SceneManager.goBack();
-    }
-
-    @FXML
-    private void handleDashboard() {
-        SceneManager.goToDashboard();
     }
 }

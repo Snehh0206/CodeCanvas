@@ -12,7 +12,7 @@ import javafx.scene.control.TextField;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class GraphCaseBattleSelectController implements Initializable {
+public class GraphCaseBattleSelectController extends BaseController implements Initializable {
 
     @FXML private ComboBox<String> algorithmAComboBox;
     @FXML private ComboBox<String> caseAComboBox;
@@ -60,9 +60,5 @@ public class GraphCaseBattleSelectController implements Initializable {
         SceneManager.switchTo("RaceMode.fxml");
     }
 
-    @FXML
-    private void handleBack() { SceneManager.goBack(); }
 
-    @FXML
-    private void handleDashboard() { SceneManager.goToDashboard(); }
 }

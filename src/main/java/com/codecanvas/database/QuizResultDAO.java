@@ -9,15 +9,20 @@ import java.util.List;
 public class QuizResultDAO {
 
     public void insertResult(QuizResult result) {
-        String sql = "INSERT INTO quiz_results (algorithm, score, total_questions, quiz_date) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO quiz_results (run_id, algorithm, score, total_questions, quiz_date) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, result.getAlgorithm());
-            stmt.setInt(2, result.getScore());
-            stmt.setInt(3, result.getTotalQuestions());
-            stmt.setString(4, result.getQuizDate());
+            if (result.getRunId() != null) {
+                stmt.setInt(1, result.getRunId());
+            } else {
+                stmt.setNull(1, Types.INTEGER);
+            }
+            stmt.setString(2, result.getAlgorithm());
+            stmt.setInt(3, result.getScore());
+            stmt.setInt(4, result.getTotalQuestions());
+            stmt.setString(5, result.getQuizDate());
 
             stmt.executeUpdate();
         } catch (SQLException e) {

@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class HistoryController implements Initializable {
+public class HistoryController extends BaseController implements Initializable {
 
     @FXML private TableView<RunRow> historyTable;
     @FXML private TableColumn<RunRow, Integer> idColumn;
@@ -40,6 +40,7 @@ public class HistoryController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        historyTable.getColumns().forEach(col -> col.prefWidthProperty().bind(historyTable.widthProperty().multiply(0.11)));
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         algorithmColumn.setCellValueFactory(new PropertyValueFactory<>("algorithm"));
         caseTypeColumn.setCellValueFactory(new PropertyValueFactory<>("caseType"));
@@ -87,15 +88,7 @@ public class HistoryController implements Initializable {
         loadRuns();
     }
 
-    @FXML
-    private void handleBack() {
-        SceneManager.goBack();
-    }
 
-    @FXML
-    private void handleDashboard() {
-        SceneManager.goToDashboard();
-    }
 
     // Wraps a Run in JavaFX properties so TableView can bind and display it
     public static class RunRow {

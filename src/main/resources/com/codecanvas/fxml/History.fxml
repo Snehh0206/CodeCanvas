@@ -26,15 +26,15 @@
     <center>
         <TableView fx:id="historyTable" BorderPane.alignment="CENTER">
             <columns>
-                <TableColumn fx:id="idColumn" text="ID" prefWidth="40.0" />
-                <TableColumn fx:id="algorithmColumn" text="Algorithm" prefWidth="110.0" />
-                <TableColumn fx:id="caseTypeColumn" text="Case" prefWidth="90.0" />
-                <TableColumn fx:id="inputSizeColumn" text="Input Size" prefWidth="80.0" />
-                <TableColumn fx:id="stepsColumn" text="Steps" prefWidth="60.0" />
-                <TableColumn fx:id="comparisonsColumn" text="Comparisons" prefWidth="100.0" />
-                <TableColumn fx:id="swapsColumn" text="Swaps" prefWidth="70.0" />
-                <TableColumn fx:id="timeColumn" text="Time (Β΅s)" prefWidth="90.0" />
-                <TableColumn fx:id="dateColumn" text="Date" prefWidth="150.0" />
+                <TableColumn fx:id="idColumn" text="ID" />
+                <TableColumn fx:id="algorithmColumn" text="Algorithm" />
+                <TableColumn fx:id="caseTypeColumn" text="Case" />
+                <TableColumn fx:id="inputSizeColumn" text="Input Size" />
+                <TableColumn fx:id="stepsColumn" text="Steps" />
+                <TableColumn fx:id="comparisonsColumn" text="Comparisons" />
+                <TableColumn fx:id="swapsColumn" text="Swaps" />
+                <TableColumn fx:id="timeColumn" text="Time (µs)" />
+                <TableColumn fx:id="dateColumn" text="Date" />
             </columns>
         </TableView>
     </center>

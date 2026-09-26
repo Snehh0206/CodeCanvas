@@ -9,6 +9,7 @@ public class Run {
     private int comparisons;
     private int swaps;
     private long executionTimeMicros;
+    private String notes;
     private String runDate;
 
     public Run(String algorithm, String caseType, int inputSize, int steps, int comparisons,
@@ -38,4 +39,6 @@ public class Run {
     public int getSwaps() { return swaps; }
     public long getExecutionTimeMicros() { return executionTimeMicros; }
     public String getRunDate() { return runDate; }
+    public void setNotes(String notes) { this.notes = notes; }
+    public String getNotes() { return notes; }
 }

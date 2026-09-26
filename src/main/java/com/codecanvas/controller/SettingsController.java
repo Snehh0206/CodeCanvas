@@ -12,7 +12,7 @@ import javafx.scene.control.RadioButton;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class SettingsController implements Initializable {
+public class SettingsController extends BaseController implements Initializable {
 
     @FXML private RadioButton lightModeRadio;
     @FXML private RadioButton darkModeRadio;
@@ -45,13 +45,5 @@ public class SettingsController implements Initializable {
         SceneManager.refreshTheme();
     }
 
-    @FXML
-    private void handleBack() {
-        SceneManager.goBack();
-    }
 
-    @FXML
-    private void handleDashboard() {
-        SceneManager.goToDashboard();
-    }
 }

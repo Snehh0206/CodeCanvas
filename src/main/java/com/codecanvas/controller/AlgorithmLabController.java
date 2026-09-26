@@ -72,6 +72,7 @@ public class AlgorithmLabController implements Initializable {
     private final QuizResultDAO quizResultDAO = new QuizResultDAO();
     private int quizScore = 0;
     private int quizTotal = 0;
+    private int lastRunId = -1;
 
     private int[] currentInput = {5, 2, 9, 1, 5, 6};
     private int currentStepIndex = 0;
@@ -89,6 +90,8 @@ public class AlgorithmLabController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        visualizationPane.prefWidthProperty().bind(((javafx.scene.layout.Region) visualizationPane.getParent()).widthProperty());
+        visualizationPane.prefHeightProperty().bind(((javafx.scene.layout.Region) visualizationPane.getParent()).heightProperty());
         AlgorithmSession session = AlgorithmSession.getInstance();
 
         if (session.isCustomInput() && session.getCustomValues() != null) {
@@ -332,10 +335,9 @@ public class AlgorithmLabController implements Initializable {
 
     private void saveQuizResult() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        QuizResult result = new QuizResult(currentAlgorithm.getName(), quizScore, quizTotal, timestamp);
+        QuizResult result = new QuizResult(lastRunId, currentAlgorithm.getName(), quizScore, quizTotal, timestamp);
         AppExecutor.submit(() -> quizResultDAO.insertResult(result));
     }
-
     private void renderCurrentGraphStep() {
         GraphStep step = currentGraphSteps.get(currentStepIndex);
         graphVisualizer.animateToStep(step);
@@ -358,7 +360,10 @@ public class AlgorithmLabController implements Initializable {
     private void saveRunToDatabase(String algorithmName, int inputSize, int steps, int comparisons, int swaps) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         Run run = new Run(algorithmName, "Custom", inputSize, steps, comparisons, swaps, 0, timestamp);
-        AppExecutor.submit(() -> runDAO.insertRun(run));
+        AppExecutor.submit(() -> {
+            int newRunId = runDAO.insertRun(run);
+            Platform.runLater(() -> lastRunId = newRunId);
+        });
     }
 
     private Graph buildExampleGraph() {
