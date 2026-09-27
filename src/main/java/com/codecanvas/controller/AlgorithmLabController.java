@@ -108,8 +108,8 @@ public class AlgorithmLabController extends BaseController implements Initializa
         currentSteps = null;
         currentGraphSteps = null;
 
-        if (selected.equals("Dijkstra") || selected.equals("Bellman-Ford")) {
-            currentGraphAlgorithm = selected.equals("Dijkstra") ? new Dijkstra() : new BellmanFord();
+        if (isGraphAlgorithmName(selected)) {
+            currentGraphAlgorithm = createGraphAlgorithm(selected);
 
             if (session.isCustomGraph()) {
                 currentGraph = GraphInputParser.parse(session.getVertexCount(), session.getEdgesText());
@@ -117,16 +117,35 @@ public class AlgorithmLabController extends BaseController implements Initializa
                 currentGraph = buildExampleGraph();
             }
 
-            setPlaybackDisabled(true);
-            sourceInstructionLabel.setText("Click a node to choose the starting vertex");
             buildDistanceTracker(currentGraph);
-            graphVisualizer.enableSourceSelection(visualizationPane, currentGraph, this::onSourceSelected);
+
+            boolean needsSource = !(selected.equals("Kruskal's Algorithm") || selected.equals("Floyd-Warshall"));
+
+            if (needsSource) {
+                setPlaybackDisabled(true);
+                sourceInstructionLabel.setText("Click a node to choose the starting vertex");
+                graphVisualizer.enableSourceSelection(visualizationPane, currentGraph, this::onSourceSelected);
+            } else {
+                graphVisualizer.initialize(visualizationPane, currentGraph);
+                sourceInstructionLabel.setText("");
+                setPlaybackDisabled(true);
+                AppExecutor.submit(() -> {
+                    List<GraphStep> computedSteps = currentGraphAlgorithm.run(currentGraph, "0");
+                    Platform.runLater(() -> {
+                        currentGraphSteps = computedSteps;
+                        currentStepIndex = 0;
+                        setPlaybackDisabled(false);
+                        renderCurrentGraphStep();
+                    });
+                });
+            }
             return;
         }
 
         currentAlgorithm = switch (selected) {
             case "Insertion Sort" -> new InsertionSort();
             case "Quick Sort" -> new QuickSort();
+            case "Merge Sort" -> new com.codecanvas.algorithm.sorting.MergeSort();
             default -> null;
         };
 
@@ -144,6 +163,24 @@ public class AlgorithmLabController extends BaseController implements Initializa
                 renderCurrentStep();
             });
         });
+    }
+    private boolean isGraphAlgorithmName(String name) {
+        return name.equals("Dijkstra") || name.equals("Bellman-Ford") || name.equals("Prim's Algorithm")
+                || name.equals("Kruskal's Algorithm") || name.equals("Floyd-Warshall")
+                || name.equals("BFS") || name.equals("DFS");
+    }
+
+    private GraphAlgorithm createGraphAlgorithm(String name) {
+        return switch (name) {
+            case "Dijkstra" -> new Dijkstra();
+            case "Bellman-Ford" -> new BellmanFord();
+            case "Prim's Algorithm" -> new com.codecanvas.algorithm.graph.Prims();
+            case "Kruskal's Algorithm" -> new com.codecanvas.algorithm.graph.Kruskal();
+            case "Floyd-Warshall" -> new com.codecanvas.algorithm.graph.FloydWarshall();
+            case "BFS" -> new com.codecanvas.algorithm.graph.BFS();
+            case "DFS" -> new com.codecanvas.algorithm.graph.DFS();
+            default -> null;
+        };
     }
 
     // Fires once the user clicks a node on the gray graph — that click IS the source pick

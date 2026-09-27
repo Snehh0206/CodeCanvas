@@ -26,7 +26,22 @@ public class SortingInputSetupController extends BaseController {
         usingCustomInput = true;
         customInputField.setDisable(false);
     }
-
+    @FXML
+    private void handleFetchLiveData() {
+        new Thread(() -> {
+            try {
+                int[] liveData = com.codecanvas.service.LiveDataFetcher.fetchLiveNumbers();
+                javafx.application.Platform.runLater(() -> {
+                    AlgorithmSession.getInstance().setCustomInput(true);
+                    AlgorithmSession.getInstance().setCustomValues(liveData);
+                    SceneManager.switchTo("AlgorithmLab.fxml");
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() ->
+                        new Alert(Alert.AlertType.ERROR, "Couldn't fetch live data — check internet connection").showAndWait());
+            }
+        }).start();
+    }
     @FXML
     private void handleContinue() {
         AlgorithmSession session = AlgorithmSession.getInstance();

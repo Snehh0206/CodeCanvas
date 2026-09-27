@@ -25,6 +25,7 @@
             <children>
                 <Button text="Example Input" onAction="#handleExampleInput" />
                 <Button text="Custom Input" onAction="#handleCustomInput" />
+                <Button text="Fetch Live Data (API)" onAction="#handleFetchLiveData" />
                 <TextField fx:id="customInputField" promptText="e.g. 5,2,9,1" disable="true" />
                 <CheckBox fx:id="quizModeCheckBox" text="Quiz Mode" />
                 <Button text="Continue" onAction="#handleContinue" />
