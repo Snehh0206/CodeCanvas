@@ -43,6 +43,11 @@ public class Dijkstra implements GraphAlgorithm {
             if (current == null) break;
 
             visited.add(current);
+            for (GraphEdge edge : graph.getEdges()) {
+                if (edge.getWeight() < 0) {
+                    throw new IllegalArgumentException("Dijkstra cannot handle negative weights");
+                }
+            }
             steps.add(new GraphStep(current, null, null, new ArrayList<>(visited),
                     new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0, "Visiting closest node: " + current, 5));
 

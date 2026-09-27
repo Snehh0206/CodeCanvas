@@ -28,29 +28,34 @@
     </top>
 
     <left>
-        <ScrollPane fitToWidth="true" prefWidth="230.0">
+        <ScrollPane fitToWidth="true" prefWidth="280.0" pannable="true">
             <content>
                 <VBox spacing="4.0">
                     <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0" /></padding>
                     <children>
                         <Label text="Pseudocode" style="-fx-font-weight: bold;" />
-                        <VBox fx:id="pseudocodeBox" spacing="2.0" />
+                        <VBox fx:id="pseudocodeBox" spacing="3.0" />
                     </children>
                 </VBox>
             </content>
         </ScrollPane>
     </left>
-
     <center>
-        <StackPane BorderPane.alignment="CENTER">
+        <VBox spacing="10.0" alignment="TOP_CENTER" BorderPane.alignment="CENTER">
             <children>
-                <Pane fx:id="visualizationPane" />
+                <StackPane>
+                    <children>
+                        <Pane fx:id="visualizationPane" />
+                    </children>
+                </StackPane>
+                <Label text="Distance Tracker" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                <HBox fx:id="distanceTrackerBox" spacing="14.0" alignment="CENTER" style="-fx-font-size: 15px;" />
             </children>
-        </StackPane>
+        </VBox>
     </center>
 
     <right>
-        <ScrollPane fitToWidth="true" prefWidth="220.0">
+        <ScrollPane fitToWidth="true" prefWidth="200.0">
             <content>
                 <VBox spacing="8.0">
                     <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0" /></padding>
@@ -63,8 +68,6 @@
                         <Label fx:id="theoreticalComplexityLabel" text="Complexity: -" />
                         <ProgressBar fx:id="progressBar" progress="0.0" prefWidth="180.0" />
                         <Label fx:id="completionLabel" text="" style="-fx-font-weight: bold; -fx-text-fill: #2ecc71;" visible="false" />
-                        <Label text="Distance Tracker" style="-fx-font-weight: bold;" />
-                        <VBox fx:id="distanceTrackerBox" spacing="2.0" />
                     </children>
                 </VBox>
             </content>

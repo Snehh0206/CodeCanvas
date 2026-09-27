@@ -32,16 +32,16 @@ public class GraphInputParser {
             String trimmed = part.trim();
             if (trimmed.isEmpty()) continue;
 
-            String[] pieces = trimmed.split("-");
+            String[] pieces = trimmed.trim().split("\\s+"); // split by whitespace, not "-"
             if (pieces.length != 3) {
-                throw new IllegalArgumentException("Each edge must be u-v-w, got: " + trimmed);
+                throw new IllegalArgumentException("Each edge must be u v w, got: " + trimmed);
             }
 
             String from = pieces[0].trim();
             String to = pieces[1].trim();
             int weight;
             try {
-                weight = Integer.parseInt(pieces[2].trim());
+                weight = Integer.parseInt(pieces[2].trim()); // Integer.parseInt handles "-5" fine
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Weight must be a number in: " + trimmed);
             }

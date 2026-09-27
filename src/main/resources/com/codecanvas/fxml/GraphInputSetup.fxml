@@ -28,8 +28,8 @@
                 <Button text="Custom Graph" onAction="#handleCustomGraphToggle" />
                 <TextField fx:id="vertexCountField" promptText="Number of vertices, e.g. 5" disable="true" />
                 <TextField fx:id="edgeCountField" promptText="Number of edges, e.g. 6" disable="true" />
-                <Label text="Enter edges as u-v-w (vertex-vertex-weight)" />
-                <TextField fx:id="edgesField" promptText="e.g. 0-1-4,0-2-1,2-3-2" disable="true" />
+                <Label text="Enter edges as u v w (vertex vertex weight — weight can be negative for Bellman-Ford)" />
+                <TextField fx:id="edgesField" promptText="e.g. 0 1 4, 0 2 -3, 2 3 2" disable="true" />
                 <CheckBox fx:id="quizModeCheckBox" text="Quiz Mode" />
                 <Button text="Continue" onAction="#handleContinue" />
             </children>

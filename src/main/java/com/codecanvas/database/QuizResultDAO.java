@@ -9,21 +9,16 @@ import java.util.List;
 public class QuizResultDAO {
 
     public void insertResult(QuizResult result) {
-        String sql = "INSERT INTO quiz_results (run_id, algorithm, score, total_questions, quiz_date) VALUES (?, ?, ?, ?, ?)";
-
+        String sql = "INSERT INTO quiz_results (user_id, run_id, algorithm, score, total_questions, quiz_date) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            if (result.getRunId() != null) {
-                stmt.setInt(1, result.getRunId());
-            } else {
-                stmt.setNull(1, Types.INTEGER);
-            }
-            stmt.setString(2, result.getAlgorithm());
-            stmt.setInt(3, result.getScore());
-            stmt.setInt(4, result.getTotalQuestions());
-            stmt.setString(5, result.getQuizDate());
-
+            stmt.setInt(1, com.codecanvas.model.UserSession.getInstance().getUserId());
+            if (result.getRunId() != null) stmt.setInt(2, result.getRunId());
+            else stmt.setNull(2, java.sql.Types.INTEGER);
+            stmt.setString(3, result.getAlgorithm());
+            stmt.setInt(4, result.getScore());
+            stmt.setInt(5, result.getTotalQuestions());
+            stmt.setString(6, result.getQuizDate());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -54,15 +49,27 @@ public class QuizResultDAO {
     }
 
     public int[] getQuizTotalsForAlgorithm(String algorithm) {
-        String sql = "SELECT SUM(score) as s, SUM(total_questions) as t FROM quiz_results WHERE algorithm = ?";
+        String sql = "SELECT SUM(score) as s, SUM(total_questions) as t FROM quiz_results WHERE algorithm = ? AND user_id = ?";
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, algorithm);
+            stmt.setInt(2, com.codecanvas.model.UserSession.getInstance().getUserId());
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new int[]{rs.getInt("s"), rs.getInt("t")};
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
+            if (rs.next()) return new int[]{rs.getInt("s"), rs.getInt("t")};
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new int[]{0, 0};
+    }public int[] getOverallQuizScoreForUser() {
+        String sql = "SELECT SUM(score) as s, SUM(total_questions) as t FROM quiz_results WHERE user_id = ?";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, com.codecanvas.model.UserSession.getInstance().getUserId());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return new int[]{rs.getInt("s"), rs.getInt("t")};
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return new int[]{0, 0};
     }
 }

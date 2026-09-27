@@ -26,11 +26,11 @@
                 <Button text="Example Graph" onAction="#handleExampleGraph" />
                 <Button text="Custom Graph" onAction="#handleCustomGraphToggle" />
                 <TextField fx:id="vertexCountField" promptText="Shared vertex count, e.g. 5" disable="true" />
-                <Label text="Edges format: u-v-w (vertex-vertex-weight)" />
+                <Label text="Edges format: u v w (vertex vertex weight)" />
                 <TextField fx:id="edgeCount1Field" promptText="Edge count A" disable="true" />
-                <TextField fx:id="edges1Field" promptText="Edges A, e.g. 0-1-4,0-2-1" disable="true" />
+                <TextField fx:id="edges1Field" promptText="Edges A, e.g. 0 1 4,0 2 1" disable="true" />
                 <TextField fx:id="edgeCount2Field" promptText="Edge count B" disable="true" />
-                <TextField fx:id="edges2Field" promptText="Edges B, e.g. 0-1-2,1-2-3" disable="true" />
+                <TextField fx:id="edges2Field" promptText="Edges B, e.g. 0 1 2,1 2 3" disable="true" />
                 <Button text="Continue" onAction="#handleContinue" />
             </children>
         </VBox>

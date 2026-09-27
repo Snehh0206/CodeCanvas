@@ -25,6 +25,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.scene.layout.HBox;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -58,7 +59,8 @@ public class AlgorithmLabController extends BaseController implements Initializa
     @FXML private Label completionLabel;
     @FXML private Label sourceInstructionLabel;
     @FXML private VBox pseudocodeBox;
-    @FXML private VBox distanceTrackerBox;
+    @FXML private HBox distanceTrackerBox;
+
 
     private int[] currentInput = {5, 2, 9, 1, 5, 6};
     private int currentStepIndex = 0;
@@ -213,6 +215,7 @@ public class AlgorithmLabController extends BaseController implements Initializa
         trackerLabels.clear();
         for (GraphNode node : graph.getNodes()) {
             Label label = new Label(node.getId() + ": ∞");
+            label.setStyle("-fx-background-color: #ecf0f1; -fx-padding: 6 10; -fx-background-radius: 6; -fx-font-weight: bold;");
             trackerLabels.put(node.getId(), label);
             distanceTrackerBox.getChildren().add(label);
         }
@@ -449,6 +452,8 @@ public class AlgorithmLabController extends BaseController implements Initializa
 
         for (String line : PseudocodeProvider.getLines(algorithmName)) {
             Label label = new Label(line.isEmpty() ? " " : line);
+            label.setWrapText(true);
+            label.setMaxWidth(250);
             label.setStyle("-fx-font-family: monospace;");
             pseudocodeLabels.add(label);
             pseudocodeBox.getChildren().add(label);

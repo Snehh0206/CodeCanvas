@@ -108,7 +108,8 @@ public class RaceModeController extends BaseController implements Initializable 
     }
 
     private boolean isGraphAlgorithm(String name) {
-        return name.equals("Dijkstra") || name.equals("Bellman-Ford");
+        return name.equals("Dijkstra") || name.equals("Bellman-Ford")
+                || name.equals("Prim's Algorithm") || name.equals("Kruskal's Algorithm");
     }
 
     // ---------- SORTING RACE ----------
@@ -537,6 +538,7 @@ public class RaceModeController extends BaseController implements Initializable 
         return switch (name) {
             case "Insertion Sort" -> new InsertionSort();
             case "Quick Sort" -> new QuickSort();
+            case "Merge Sort" -> new com.codecanvas.algorithm.sorting.MergeSort();
             default -> null;
         };
     }
@@ -545,6 +547,8 @@ public class RaceModeController extends BaseController implements Initializable 
         return switch (name) {
             case "Dijkstra" -> new Dijkstra();
             case "Bellman-Ford" -> new BellmanFord();
+            case "Prim's Algorithm" -> new com.codecanvas.algorithm.graph.Prims();
+            case "Kruskal's Algorithm" -> new com.codecanvas.algorithm.graph.Kruskal();
             default -> null;
         };
     }

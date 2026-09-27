@@ -19,13 +19,12 @@ public class RaceAlgorithmSelectController extends BaseController implements Ini
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         String category = RaceSession.getInstance().getCategory();
-
         if (category.equals("Sorting")) {
-            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort"));
-            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort"));
+            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort", "Merge Sort"));
+            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort", "Merge Sort"));
         } else {
-            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford"));
-            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford"));
+            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford", "Prim's Algorithm", "Kruskal's Algorithm"));
+            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford", "Prim's Algorithm", "Kruskal's Algorithm"));
         }
     }
 
