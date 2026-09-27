@@ -11,6 +11,7 @@ public class BellmanFord implements GraphAlgorithm {
     public List<GraphStep> run(Graph graph, String startNodeId) {
         List<GraphStep> steps = new ArrayList<>();
         Map<String, Integer> distances = new HashMap<>();
+        Map<String, String> predecessors = new HashMap<>();
         int relaxations = 0;
 
         for (GraphNode node : graph.getNodes()) {
@@ -19,15 +20,15 @@ public class BellmanFord implements GraphAlgorithm {
         distances.put(startNodeId, 0);
 
         steps.add(new GraphStep(startNodeId, null, null, List.of(), new HashMap<>(distances),
-                0, relaxations, "Start at " + startNodeId, 1));
+                new HashMap<>(predecessors), 0, relaxations, "Start at " + startNodeId, 1));
         steps.add(new GraphStep(startNodeId, null, null, List.of(), new HashMap<>(distances),
-                0, relaxations, "distance[" + startNodeId + "] = 0", 2));
+                new HashMap<>(predecessors), 0, relaxations, "distance[" + startNodeId + "] = 0", 2));
 
         int nodeCount = graph.getNodes().size();
 
         for (int i = 1; i < nodeCount; i++) {
             steps.add(new GraphStep(null, null, null, List.of(), new HashMap<>(distances),
-                    0, relaxations, "Pass " + i + " of " + (nodeCount - 1), 3));
+                    new HashMap<>(predecessors), 0, relaxations, "Pass " + i + " of " + (nodeCount - 1), 3));
 
             boolean changedThisPass = false;
 
@@ -35,21 +36,22 @@ public class BellmanFord implements GraphAlgorithm {
                 if (distances.get(edge.getFrom()) == Integer.MAX_VALUE) continue;
 
                 steps.add(new GraphStep(edge.getFrom(), edge.getFrom(), edge.getTo(), List.of(),
-                        new HashMap<>(distances), 0, relaxations,
-                        "Checking edge " + edge.getFrom() + " -> " + edge.getTo(), 4));
+                        new HashMap<>(distances), new HashMap<>(predecessors), 0, relaxations,
+                        "Checking edge " + edge.getFrom() + " -> " + edge.getTo() + " (weight " + edge.getWeight() + ")", 4));
 
                 int newDist = distances.get(edge.getFrom()) + edge.getWeight();
                 boolean improved = newDist < distances.get(edge.getTo());
                 steps.add(new GraphStep(edge.getFrom(), edge.getFrom(), edge.getTo(), List.of(),
-                        new HashMap<>(distances), 0, relaxations,
-                        improved ? "Improvement found" : "No improvement", 5));
+                        new HashMap<>(distances), new HashMap<>(predecessors), 0, relaxations,
+                        improved ? "Improvement found: " + newDist + " is shorter" : "No improvement for " + edge.getTo(), 5));
 
                 if (improved) {
                     distances.put(edge.getTo(), newDist);
+                    predecessors.put(edge.getTo(), edge.getFrom());
                     relaxations++;
                     changedThisPass = true;
                     steps.add(new GraphStep(edge.getFrom(), edge.getFrom(), edge.getTo(), List.of(),
-                            new HashMap<>(distances), 0, relaxations,
+                            new HashMap<>(distances), new HashMap<>(predecessors), 0, relaxations,
                             "Relaxed " + edge.getTo() + " to " + newDist, 6));
                 }
             }

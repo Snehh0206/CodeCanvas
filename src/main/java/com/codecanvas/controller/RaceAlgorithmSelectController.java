@@ -11,7 +11,7 @@ import javafx.scene.control.ComboBox;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class RaceAlgorithmSelectController implements Initializable {
+public class RaceAlgorithmSelectController extends BaseController implements Initializable {
 
     @FXML private ComboBox<String> algorithm1ComboBox;
     @FXML private ComboBox<String> algorithm2ComboBox;
@@ -42,7 +42,9 @@ public class RaceAlgorithmSelectController implements Initializable {
         RaceSession session = RaceSession.getInstance();
         session.setAlgorithm1Name(name1);
         session.setAlgorithm2Name(name2);
+        session.setCaseBattle(false);
 
-        SceneManager.switchTo("RaceInputSetup.fxml");
+        SceneManager.switchTo(session.getCategory().equals("Graph")
+                ? "RaceGraphInputSetup.fxml" : "RaceSortingInputSetup.fxml");
     }
 }

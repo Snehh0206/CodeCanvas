@@ -11,6 +11,7 @@ public class Dijkstra implements GraphAlgorithm {
     public List<GraphStep> run(Graph graph, String startNodeId) {
         List<GraphStep> steps = new ArrayList<>();
         Map<String, Integer> distances = new HashMap<>();
+        Map<String, String> predecessors = new HashMap<>();
         Set<String> visited = new HashSet<>();
         int comparisons = 0;
 
@@ -20,13 +21,13 @@ public class Dijkstra implements GraphAlgorithm {
         distances.put(startNodeId, 0);
 
         steps.add(new GraphStep(null, null, null, new ArrayList<>(visited),
-                new HashMap<>(distances), comparisons, 0, "Start at " + startNodeId, 1));
+                new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0, "Start at " + startNodeId, 1));
         steps.add(new GraphStep(null, null, null, new ArrayList<>(visited),
-                new HashMap<>(distances), comparisons, 0, "distance[" + startNodeId + "] = 0", 2));
+                new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0, "distance[" + startNodeId + "] = 0", 2));
 
         while (visited.size() < graph.getNodes().size()) {
             steps.add(new GraphStep(null, null, null, new ArrayList<>(visited),
-                    new HashMap<>(distances), comparisons, 0,
+                    new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0,
                     visited.size() + " of " + graph.getNodes().size() + " nodes visited so far", 3));
 
             String current = null;
@@ -43,30 +44,34 @@ public class Dijkstra implements GraphAlgorithm {
 
             visited.add(current);
             steps.add(new GraphStep(current, null, null, new ArrayList<>(visited),
-                    new HashMap<>(distances), comparisons, 0, "Visiting closest node: " + current, 5));
+                    new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0, "Visiting closest node: " + current, 5));
 
             for (GraphEdge edge : graph.getEdgesFrom(current)) {
                 comparisons++;
                 steps.add(new GraphStep(current, edge.getFrom(), edge.getTo(), new ArrayList<>(visited),
-                        new HashMap<>(distances), comparisons, 0,
-                        "Checking edge " + edge.getFrom() + " -> " + edge.getTo(), 6));
+                        new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0,
+                        "Checking edge " + edge.getFrom() + " -> " + edge.getTo() + " (weight " + edge.getWeight() + ")", 6));
 
                 int newDist = distances.get(current) + edge.getWeight();
                 boolean improved = newDist < distances.get(edge.getTo());
                 steps.add(new GraphStep(current, edge.getFrom(), edge.getTo(), new ArrayList<>(visited),
-                        new HashMap<>(distances), comparisons, 0,
-                        improved ? "New distance (" + newDist + ") is shorter" : "No improvement found", 7));
+                        new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0,
+                        improved ? "New distance to " + edge.getTo() + " (" + newDist + ") is shorter than current (" + describeDist(distances.get(edge.getTo())) + ")"
+                                : "No improvement — distance to " + edge.getTo() + " stays " + describeDist(distances.get(edge.getTo())), 7));
 
                 if (improved) {
                     distances.put(edge.getTo(), newDist);
+                    predecessors.put(edge.getTo(), current);
                     steps.add(new GraphStep(current, edge.getFrom(), edge.getTo(), new ArrayList<>(visited),
-                            new HashMap<>(distances), comparisons, 0,
+                            new HashMap<>(distances), new HashMap<>(predecessors), comparisons, 0,
                             "Updated distance to " + edge.getTo() + ": " + newDist, 8));
                 }
             }
         }
         return steps;
     }
+
+    private String describeDist(int d) { return d == Integer.MAX_VALUE ? "infinity" : String.valueOf(d); }
 
     @Override
     public String getName() { return "Dijkstra"; }

@@ -11,7 +11,12 @@ public class AppExecutor {
         executor.submit(() -> {
             String threadName = Thread.currentThread().getName();
             System.out.println("[" + threadName + "] Task started");
-            task.run();
+            try {
+                task.run();
+            } catch (Exception e) {
+                System.out.println("[" + threadName + "] Task FAILED: " + e.getMessage());
+                e.printStackTrace();
+            }
             System.out.println("[" + threadName + "] Task finished");
         });
     }

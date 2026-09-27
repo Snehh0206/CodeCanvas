@@ -9,10 +9,9 @@ import com.codecanvas.algorithm.sorting.QuickSort;
 import com.codecanvas.database.RunDAO;
 import com.codecanvas.model.*;
 import com.codecanvas.service.AppExecutor;
-import com.codecanvas.service.GraphInputParser;
-import com.codecanvas.service.SceneManager;
-import com.codecanvas.service.InputGenerator;
 import com.codecanvas.service.GraphCaseGenerator;
+import com.codecanvas.service.GraphInputParser;
+import com.codecanvas.service.InputGenerator;
 import com.codecanvas.visualization.BarVisualizer;
 import com.codecanvas.visualization.GraphVisualizer;
 
@@ -21,15 +20,19 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class RaceModeController extends BaseController implements Initializable {
@@ -49,6 +52,10 @@ public class RaceModeController extends BaseController implements Initializable 
     @FXML private ProgressBar progress1Bar;
     @FXML private ProgressBar progress2Bar;
     @FXML private Label resultLabel;
+    @FXML private Label sourceInstructionLabel;
+    @FXML private Button startRaceButton;
+    @FXML private VBox distanceTracker1Box;
+    @FXML private VBox distanceTracker2Box;
 
     private final BarVisualizer barVisualizer1 = new BarVisualizer();
     private final BarVisualizer barVisualizer2 = new BarVisualizer();
@@ -63,8 +70,21 @@ public class RaceModeController extends BaseController implements Initializable 
     private boolean race1Done = false;
     private boolean race2Done = false;
 
+    private final Map<String, Label> tracker1Labels = new HashMap<>();
+    private final Map<String, Label> tracker2Labels = new HashMap<>();
+
+    private Graph pendingGraph1;
+    private Graph pendingGraph2;
+    private GraphAlgorithm pendingAlgo1;
+    private GraphAlgorithm pendingAlgo2;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        race1Done = false;
+        race2Done = false;
+        startRaceButton.setVisible(false);
+        startRaceButton.setManaged(false);
+        sourceInstructionLabel.setText("");
         RaceSession session = RaceSession.getInstance();
 
         if (session.isCaseBattle()) {
@@ -81,7 +101,7 @@ public class RaceModeController extends BaseController implements Initializable 
         resultLabel.setText("Racing...");
 
         if (isGraph) {
-            runGraphRace(name1, name2);
+            setupGraphSourceSelection(session, name1, name2);
         } else {
             runSortingRace(session, name1, name2);
         }
@@ -91,7 +111,7 @@ public class RaceModeController extends BaseController implements Initializable 
         return name.equals("Dijkstra") || name.equals("Bellman-Ford");
     }
 
-    // ---------- SORTING RACE (user input) ----------
+    // ---------- SORTING RACE ----------
 
     private void runSortingRace(RaceSession session, String name1, String name2) {
         int[] input1 = session.isCustom1() && session.getCustomValues1() != null
@@ -112,26 +132,34 @@ public class RaceModeController extends BaseController implements Initializable 
 
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<AlgorithmStep> steps = algo1.run(input1);
-            time1Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<AlgorithmStep> steps = algo1.run(input1);
+                time1Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() -> {
-                thread1Label.setText("Thread: " + threadName);
-                playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
-            });
+                Platform.runLater(() -> {
+                    thread1Label.setText("Thread: " + threadName);
+                    playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race1Done = true; stats1Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
 
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<AlgorithmStep> steps = algo2.run(input2);
-            time2Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<AlgorithmStep> steps = algo2.run(input2);
+                time2Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() -> {
-                thread2Label.setText("Thread: " + threadName);
-                playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
-            });
+                Platform.runLater(() -> {
+                    thread2Label.setText("Thread: " + threadName);
+                    playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race2Done = true; stats2Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
     }
 
@@ -143,7 +171,7 @@ public class RaceModeController extends BaseController implements Initializable 
             AlgorithmStep step = steps.get(i);
             int stepIndex = i;
 
-            KeyFrame frame = new KeyFrame(Duration.millis(350.0 * i), event -> {
+            KeyFrame frame = new KeyFrame(Duration.millis(150.0 * i), event -> {
                 visualizer.animateToStep(step);
                 progressBar.setProgress((stepIndex + 1) / (double) steps.size());
                 statsLabel.setText("Comparisons: " + step.getComparisons() + " | Swaps: " + step.getSwaps());
@@ -151,6 +179,7 @@ public class RaceModeController extends BaseController implements Initializable 
                 if (stepIndex == steps.size() - 1) {
                     long micros = isFirst ? time1Micros : time2Micros;
                     timeLabel.setText("Computation Time: " + micros + " Β΅s");
+                    progressBar.setStyle("-fx-accent: #2ecc71;");
                     if (isFirst) race1Done = true; else race2Done = true;
                     checkRaceFinished();
                 }
@@ -160,83 +189,106 @@ public class RaceModeController extends BaseController implements Initializable 
         timeline.play();
     }
 
-    // ---------- GRAPH RACE ----------
+    // ---------- GRAPH RACE (user input — waits for a shared source click) ----------
 
-    private void runGraphRace(String name1, String name2) {
-        RaceSession session = RaceSession.getInstance();
-
-        Graph graph1;
-        Graph graph2;
-        String startNode;
-
+    private void setupGraphSourceSelection(RaceSession session, String name1, String name2) {
         if (session.isCustomGraph()) {
-            graph1 = GraphInputParser.parse(session.getRaceVertexCount(), session.getEdges1Text());
-            graph2 = GraphInputParser.parse(session.getRaceVertexCount(), session.getEdges2Text());
-            startNode = "0";
+            pendingGraph1 = GraphInputParser.parse(session.getRaceVertexCount(), session.getEdges1Text());
+            pendingGraph2 = GraphInputParser.parse(session.getRaceVertexCount(), session.getEdges2Text());
         } else {
-            graph1 = buildExampleGraph();
-            graph2 = buildExampleGraph();
-            startNode = "A";
+            pendingGraph1 = buildExampleGraph();
+            pendingGraph2 = buildExampleGraph();
         }
 
-        GraphAlgorithm algo1 = createGraphAlgorithm(name1);
-        GraphAlgorithm algo2 = createGraphAlgorithm(name2);
+        pendingAlgo1 = createGraphAlgorithm(name1);
+        pendingAlgo2 = createGraphAlgorithm(name2);
 
-        if (algo1 == null || algo2 == null) {
+        if (pendingAlgo1 == null || pendingAlgo2 == null) {
             resultLabel.setText("Error: unrecognized algorithm");
             return;
         }
 
-        timeComplexity1Label.setText("Complexity: " + algo1.getTheoreticalComplexity());
-        timeComplexity2Label.setText("Complexity: " + algo2.getTheoreticalComplexity());
+        timeComplexity1Label.setText("Complexity: " + pendingAlgo1.getTheoreticalComplexity());
+        timeComplexity2Label.setText("Complexity: " + pendingAlgo2.getTheoreticalComplexity());
+        resultLabel.setText("Click a node on the left graph to choose the shared source vertex");
 
-        graphVisualizer1.initialize(visualizationPane1, graph1);
-        graphVisualizer2.initialize(visualizationPane2, graph2);
+        buildDistanceTracker(distanceTracker1Box, tracker1Labels, pendingGraph1);
+        buildDistanceTracker(distanceTracker2Box, tracker2Labels, pendingGraph2);
 
-        Graph finalGraph1 = graph1;
-        Graph finalGraph2 = graph2;
+        graphVisualizer1.enableSourceSelection(visualizationPane1, pendingGraph1, this::onSharedSourceSelected);
+        graphVisualizer2.initialize(visualizationPane2, pendingGraph2);
+    }
 
+    private void onSharedSourceSelected(String nodeId) {
+        graphVisualizer1.markSource(nodeId);
+        graphVisualizer2.markSource(nodeId);
+        sourceInstructionLabel.setText("Source: " + nodeId);
+        startRaceButton.setVisible(true);
+        startRaceButton.setManaged(true);
+        startRaceButton.setUserData(nodeId);
+    }
+
+    @FXML
+    private void handleStartRaceClick() {
+        String startNode = (String) startRaceButton.getUserData();
+        startRaceButton.setDisable(true);
+        resultLabel.setText("Racing...");
+        runGraphRaceFrom(startNode);
+    }
+
+    private void runGraphRaceFrom(String startNode) {
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<GraphStep> steps = algo1.run(finalGraph1, startNode);
-            time1Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<GraphStep> steps = pendingAlgo1.run(pendingGraph1, startNode);
+                time1Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() -> {
-                thread1Label.setText("Thread: " + threadName);
-                playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
-            });
+                Platform.runLater(() -> {
+                    thread1Label.setText("Thread: " + threadName);
+                    playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, tracker1Labels, true);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race1Done = true; stats1Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
 
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<GraphStep> steps = algo2.run(finalGraph2, startNode);
-            time2Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<GraphStep> steps = pendingAlgo2.run(pendingGraph2, startNode);
+                time2Micros = (System.nanoTime() - start) / 1_000;
 
-            Platform.runLater(() -> {
-                thread2Label.setText("Thread: " + threadName);
-                playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
-            });
+                Platform.runLater(() -> {
+                    thread2Label.setText("Thread: " + threadName);
+                    playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, tracker2Labels, false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race2Done = true; stats2Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
     }
 
     private void playGraphSteps(List<GraphStep> steps, GraphVisualizer visualizer, ProgressBar progressBar,
-                                Label statsLabel, Label timeLabel, boolean isFirst) {
+                                Label statsLabel, Label timeLabel, Map<String, Label> trackerLabels, boolean isFirst) {
         Timeline timeline = new Timeline();
 
         for (int i = 0; i < steps.size(); i++) {
             GraphStep step = steps.get(i);
             int stepIndex = i;
+            boolean isFinal = stepIndex == steps.size() - 1;
 
             KeyFrame frame = new KeyFrame(Duration.millis(450.0 * i), event -> {
-                visualizer.animateToStep(step);
+                visualizer.animateToStep(step, isFinal);
+                updateTracker(trackerLabels, step);
                 progressBar.setProgress((stepIndex + 1) / (double) steps.size());
                 statsLabel.setText("Comparisons: " + step.getComparisons() + " | Relaxations: " + step.getRelaxations());
 
-                if (stepIndex == steps.size() - 1) {
+                if (isFinal) {
                     long micros = isFirst ? time1Micros : time2Micros;
                     timeLabel.setText("Computation Time: " + micros + " Β΅s");
+                    progressBar.setStyle("-fx-accent: #2ecc71;");
                     if (isFirst) race1Done = true; else race2Done = true;
                     checkRaceFinished();
                 }
@@ -244,6 +296,26 @@ public class RaceModeController extends BaseController implements Initializable 
             timeline.getKeyFrames().add(frame);
         }
         timeline.play();
+    }
+
+    private void buildDistanceTracker(VBox box, Map<String, Label> labelMap, Graph graph) {
+        box.getChildren().clear();
+        labelMap.clear();
+        for (GraphNode node : graph.getNodes()) {
+            Label label = new Label(node.getId() + ": ∞");
+            labelMap.put(node.getId(), label);
+            box.getChildren().add(label);
+        }
+    }
+
+    private void updateTracker(Map<String, Label> labelMap, GraphStep step) {
+        for (Map.Entry<String, Integer> entry : step.getDistances().entrySet()) {
+            Label label = labelMap.get(entry.getKey());
+            if (label != null) {
+                int dist = entry.getValue();
+                label.setText(entry.getKey() + ": " + (dist == Integer.MAX_VALUE ? "∞" : dist));
+            }
+        }
     }
 
     private Graph buildExampleGraph() {
@@ -261,7 +333,15 @@ public class RaceModeController extends BaseController implements Initializable 
         return graph;
     }
 
-    // ---------- CASE BATTLE ----------
+    // ---------- CASE BATTLE (fixed start "0", unaffected by click-selection) ----------
+
+    private void runCaseBattle(RaceSession session) {
+        if (session.getCategory().equals("Graph")) {
+            runGraphCaseBattle(session);
+        } else {
+            runSortingCaseBattle(session);
+        }
+    }
 
     private void runSortingCaseBattle(RaceSession session) {
         String name1 = session.getAlgorithm1Name();
@@ -287,41 +367,41 @@ public class RaceModeController extends BaseController implements Initializable 
 
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<AlgorithmStep> steps = algo1.run(input1);
-            time1Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<AlgorithmStep> steps = algo1.run(input1);
+                time1Micros = (System.nanoTime() - start) / 1_000;
 
-            AlgorithmStep last = steps.get(steps.size() - 1);
-            saveRun(name1, case1, size, steps.size(), last.getComparisons(), last.getSwaps(), time1Micros);
+                AlgorithmStep last = steps.get(steps.size() - 1);
+                saveRun(name1, case1, size, steps.size(), last.getComparisons(), last.getSwaps(), time1Micros);
 
-            Platform.runLater(() -> {
-                thread1Label.setText("Thread: " + threadName);
-                playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
-            });
+                Platform.runLater(() -> {
+                    thread1Label.setText("Thread: " + threadName);
+                    playSortingSteps(steps, barVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race1Done = true; stats1Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
 
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<AlgorithmStep> steps = algo2.run(input2);
-            time2Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<AlgorithmStep> steps = algo2.run(input2);
+                time2Micros = (System.nanoTime() - start) / 1_000;
 
-            AlgorithmStep last = steps.get(steps.size() - 1);
-            saveRun(name2, case2, size, steps.size(), last.getComparisons(), last.getSwaps(), time2Micros);
+                AlgorithmStep last = steps.get(steps.size() - 1);
+                saveRun(name2, case2, size, steps.size(), last.getComparisons(), last.getSwaps(), time2Micros);
 
-            Platform.runLater(() -> {
-                thread2Label.setText("Thread: " + threadName);
-                playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
-            });
+                Platform.runLater(() -> {
+                    thread2Label.setText("Thread: " + threadName);
+                    playSortingSteps(steps, barVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race2Done = true; stats2Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
-    }
-
-    private void runCaseBattle(RaceSession session) {
-        if (session.getCategory().equals("Graph")) {
-            runGraphCaseBattle(session);
-        } else {
-            runSortingCaseBattle(session);
-        }
     }
 
     private void runGraphCaseBattle(RaceSession session) {
@@ -345,47 +425,57 @@ public class RaceModeController extends BaseController implements Initializable 
 
         graphVisualizer1.initialize(visualizationPane1, graph1);
         graphVisualizer2.initialize(visualizationPane2, graph2);
+        buildDistanceTracker(distanceTracker1Box, tracker1Labels, graph1);
+        buildDistanceTracker(distanceTracker2Box, tracker2Labels, graph2);
 
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<GraphStep> steps = algo1.run(graph1, "0");
-            time1Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<GraphStep> steps = algo1.run(graph1, "0");
+                time1Micros = (System.nanoTime() - start) / 1_000;
 
-            GraphStep last = steps.get(steps.size() - 1);
-            saveGraphRun(name1, case1, vertexCount, steps.size(), last.getComparisons(), last.getRelaxations(), time1Micros);
+                GraphStep last = steps.get(steps.size() - 1);
+                saveGraphRun(name1, case1, vertexCount, steps.size(), last.getComparisons(), last.getRelaxations(), time1Micros);
 
-            Platform.runLater(() -> {
-                thread1Label.setText("Thread: " + threadName);
-                playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, true);
-            });
+                Platform.runLater(() -> {
+                    thread1Label.setText("Thread: " + threadName);
+                    playGraphSteps(steps, graphVisualizer1, progress1Bar, stats1Label, executionTime1Label, tracker1Labels, true);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race1Done = true; stats1Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
 
         AppExecutor.submit(() -> {
             String threadName = Thread.currentThread().getName();
-            long start = System.nanoTime();
-            List<GraphStep> steps = algo2.run(graph2, "0");
-            time2Micros = (System.nanoTime() - start) / 1_000;
+            try {
+                long start = System.nanoTime();
+                List<GraphStep> steps = algo2.run(graph2, "0");
+                time2Micros = (System.nanoTime() - start) / 1_000;
 
-            GraphStep last = steps.get(steps.size() - 1);
-            saveGraphRun(name2, case2, vertexCount, steps.size(), last.getComparisons(), last.getRelaxations(), time2Micros);
+                GraphStep last = steps.get(steps.size() - 1);
+                saveGraphRun(name2, case2, vertexCount, steps.size(), last.getComparisons(), last.getRelaxations(), time2Micros);
 
-            Platform.runLater(() -> {
-                thread2Label.setText("Thread: " + threadName);
-                playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, false);
-            });
+                Platform.runLater(() -> {
+                    thread2Label.setText("Thread: " + threadName);
+                    playGraphSteps(steps, graphVisualizer2, progress2Bar, stats2Label, executionTime2Label, tracker2Labels, false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> { race2Done = true; stats2Label.setText("Error: " + e.getMessage()); checkRaceFinished(); });
+            }
         });
-    }
-
-    private void saveGraphRun(String algorithm, String caseType, int vertexCount, int steps, int comparisons, int relaxations, long micros) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        Run run = new Run(algorithm, caseType, vertexCount, steps, comparisons, relaxations, micros, timestamp);
-        runDAO.insertRun(run);
     }
 
     private void saveRun(String algorithm, String caseType, int size, int steps, int comparisons, int swaps, long micros) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         Run run = new Run(algorithm, caseType, size, steps, comparisons, swaps, micros, timestamp);
+        runDAO.insertRun(run);
+    }
+
+    private void saveGraphRun(String algorithm, String caseType, int vertexCount, int steps, int comparisons, int relaxations, long micros) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Run run = new Run(algorithm, caseType, vertexCount, steps, comparisons, relaxations, micros, timestamp);
         runDAO.insertRun(run);
     }
 
@@ -395,13 +485,14 @@ public class RaceModeController extends BaseController implements Initializable 
         if (race1Done && race2Done) {
             String name1 = algorithm1NameLabel.getText();
             String name2 = algorithm2NameLabel.getText();
+            String prefix = "✅ ";
 
             if (time1Micros < time2Micros) {
-                resultLabel.setText(name1 + " beat " + name2 + "! (" + time1Micros + "Β΅s vs " + time2Micros + "Β΅s)");
+                resultLabel.setText(prefix + name1 + " beat " + name2 + "! (" + time1Micros + "Β΅s vs " + time2Micros + "Β΅s)");
             } else if (time2Micros < time1Micros) {
-                resultLabel.setText(name2 + " beat " + name1 + "! (" + time2Micros + "Β΅s vs " + time1Micros + "Β΅s)");
+                resultLabel.setText(prefix + name2 + " beat " + name1 + "! (" + time2Micros + "Β΅s vs " + time1Micros + "Β΅s)");
             } else {
-                resultLabel.setText("It's a tie! (" + time1Micros + "Β΅s each)");
+                resultLabel.setText(prefix + "It's a tie! (" + time1Micros + "Β΅s each)");
             }
         }
     }

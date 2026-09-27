@@ -14,7 +14,7 @@ import javafx.scene.control.ProgressBar;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class MasteryMapController implements Initializable {
+public class MasteryMapController extends BaseController implements Initializable {
 
     @FXML private Label insertionSortLabel;
     @FXML private ProgressBar insertionSortBar;
@@ -56,9 +56,5 @@ public class MasteryMapController implements Initializable {
         });
     }
 
-    @FXML
-    private void handleBack() { SceneManager.goBack(); }
 
-    @FXML
-    private void handleDashboard() { SceneManager.goToDashboard(); }
 }
