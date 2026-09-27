@@ -9,27 +9,22 @@ import java.util.List;
 public class RunDAO {
 
     public int insertRun(Run run) {
-        String sql = "INSERT INTO runs (algorithm, case_type, input_size, steps, comparisons, swaps, execution_time_micros, run_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
+        String sql = "INSERT INTO runs (user_id, algorithm, case_type, input_size, steps, comparisons, swaps, execution_time_micros, run_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setString(1, run.getAlgorithm());
-            stmt.setString(2, run.getCaseType());
-            stmt.setInt(3, run.getInputSize());
-            stmt.setInt(4, run.getSteps());
-            stmt.setInt(5, run.getComparisons());
-            stmt.setInt(6, run.getSwaps());
-            stmt.setLong(7, run.getExecutionTimeMicros());
-            stmt.setString(8, run.getRunDate());
-            stmt.setString(9, run.getNotes());
-
+            stmt.setInt(1, com.codecanvas.model.UserSession.getInstance().getUserId());
+            stmt.setString(2, run.getAlgorithm());
+            stmt.setString(3, run.getCaseType());
+            stmt.setInt(4, run.getInputSize());
+            stmt.setInt(5, run.getSteps());
+            stmt.setInt(6, run.getComparisons());
+            stmt.setInt(7, run.getSwaps());
+            stmt.setLong(8, run.getExecutionTimeMicros());
+            stmt.setString(9, run.getRunDate());
+            stmt.setString(10, run.getNotes());
             stmt.executeUpdate();
-
             ResultSet keys = stmt.getGeneratedKeys();
-            if (keys.next()) {
-                return keys.getInt(1);
-            }
+            if (keys.next()) return keys.getInt(1);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -38,15 +33,12 @@ public class RunDAO {
 
     public List<Run> getAllRuns() {
         List<Run> runs = new ArrayList<>();
-        String sql = "SELECT * FROM runs ORDER BY id DESC";
-
+        String sql = "SELECT * FROM runs WHERE user_id = ? ORDER BY id DESC";
         try (Connection conn = DatabaseHelper.connect();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                runs.add(mapRow(rs));
-            }
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, com.codecanvas.model.UserSession.getInstance().getUserId());
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) runs.add(mapRow(rs));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -75,23 +67,19 @@ public class RunDAO {
 
     public List<Run> getRunsByAlgorithm(String algorithm) {
         List<Run> runs = new ArrayList<>();
-        String sql = "SELECT * FROM runs WHERE algorithm = ? ORDER BY input_size ASC";
-
+        String sql = "SELECT * FROM runs WHERE algorithm = ? AND user_id = ? ORDER BY input_size ASC";
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, algorithm);
+            stmt.setInt(2, com.codecanvas.model.UserSession.getInstance().getUserId());
             ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                runs.add(mapRow(rs));
-            }
+            while (rs.next()) runs.add(mapRow(rs));
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return runs;
     }
-    
+
     public void deleteRun(int id) {
         String sql = "DELETE FROM runs WHERE id = ?";
 
@@ -132,16 +120,43 @@ public class RunDAO {
     }
 
     public int countRunsForAlgorithm(String algorithm) {
-        String sql = "SELECT COUNT(*) as cnt FROM runs WHERE algorithm = ?";
+        String sql = "SELECT COUNT(*) as cnt FROM runs WHERE algorithm = ? AND user_id = ?";
         try (Connection conn = DatabaseHelper.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, algorithm);
+            stmt.setInt(2, com.codecanvas.model.UserSession.getInstance().getUserId());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) return rs.getInt("cnt");
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
+    public int countAllRunsForUser() {
+        String sql = "SELECT COUNT(*) as cnt FROM runs WHERE user_id = ?";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, com.codecanvas.model.UserSession.getInstance().getUserId());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt("cnt");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
+    public String getMostRecentAlgorithm() {
+        String sql = "SELECT algorithm FROM runs WHERE user_id = ? ORDER BY id DESC LIMIT 1";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, com.codecanvas.model.UserSession.getInstance().getUserId());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("algorithm");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "None yet";
+    }
 
 }

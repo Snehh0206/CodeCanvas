@@ -2,11 +2,14 @@ package com.codecanvas.service;
 
 import com.codecanvas.model.AlgorithmStep;
 import com.codecanvas.model.QuizQuestion;
+import com.codecanvas.model.GraphStep;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class QuizGenerator {
 
@@ -36,4 +39,33 @@ public class QuizGenerator {
 
         return new QuizQuestion(questionText, options, correctIndex);
     }
+
+    public static QuizQuestion buildGraphQuestion(GraphStep currentStep, GraphStep nextStep) {
+        List<String> options = new ArrayList<>();
+        String correctAnswer;
+
+        boolean edgeChanged = nextStep.getActiveEdgeFrom() != null
+                && !nextStep.getActiveEdgeFrom().equals(currentStep.getActiveEdgeFrom());
+        boolean nodeVisitedGrew = nextStep.getVisitedNodes().size() > currentStep.getVisitedNodes().size();
+
+        if (nodeVisitedGrew) {
+            correctAnswer = "A new node gets visited";
+        } else if (edgeChanged) {
+            correctAnswer = "A new edge gets checked";
+        } else {
+            correctAnswer = "A distance gets updated";
+        }
+
+        options.add("A new node gets visited");
+        options.add("A new edge gets checked");
+        options.add("A distance gets updated");
+        options.add("Nothing changes");
+
+        Collections.shuffle(options);
+        int correctIndex = options.indexOf(correctAnswer);
+
+        String questionText = "Current node: " + currentStep.getCurrentNodeId() + "\nWhat happens next?";
+        return new QuizQuestion(questionText, options, correctIndex);
+    }
+
 }

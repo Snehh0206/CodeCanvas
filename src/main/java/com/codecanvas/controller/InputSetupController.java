@@ -7,7 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
-public class InputSetupController {
+public class InputSetupController extends BaseController{
 
     @FXML private Button exampleInputButton;
     @FXML private Button customInputButton;
@@ -19,11 +19,7 @@ public class InputSetupController {
     private boolean usingCustomInput = false;
 
 
-    @FXML
-    private void handleBack() { SceneManager.goBack(); }
 
-    @FXML
-    private void handleDashboard() { SceneManager.goToDashboard(); }
     @FXML
     private void handleExampleInput() {
         usingCustomInput = false;

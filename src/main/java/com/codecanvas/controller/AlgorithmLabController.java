@@ -6,47 +6,37 @@ import com.codecanvas.algorithm.graph.BellmanFord;
 import com.codecanvas.algorithm.graph.Dijkstra;
 import com.codecanvas.algorithm.sorting.InsertionSort;
 import com.codecanvas.algorithm.sorting.QuickSort;
-import com.codecanvas.model.AlgorithmSession;
-import com.codecanvas.model.AlgorithmStep;
-import com.codecanvas.model.Graph;
-import com.codecanvas.model.GraphEdge;
-import com.codecanvas.model.GraphNode;
-import com.codecanvas.model.GraphStep;
+import com.codecanvas.database.QuizResultDAO;
+import com.codecanvas.database.RunDAO;
+import com.codecanvas.model.*;
+import com.codecanvas.service.AppExecutor;
+import com.codecanvas.service.GraphInputParser;
+import com.codecanvas.service.PseudocodeProvider;
+import com.codecanvas.service.QuizGenerator;
 import com.codecanvas.visualization.BarVisualizer;
 import com.codecanvas.visualization.GraphVisualizer;
-import com.codecanvas.service.GraphInputParser;
-import com.codecanvas.service.AppExecutor;
-import com.codecanvas.database.RunDAO;
-import com.codecanvas.model.Run;
-import com.codecanvas.model.QuizQuestion;
-import com.codecanvas.service.QuizGenerator;
-import com.codecanvas.service.PseudocodeProvider;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.application.Platform;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.layout.VBox;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.time.format.DateTimeFormatter;
-import com.codecanvas.database.QuizResultDAO;
-import com.codecanvas.model.QuizResult;
 import javafx.util.Duration;
+import javafx.scene.layout.HBox;
 
-public class AlgorithmLabController implements Initializable {
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+public class AlgorithmLabController extends BaseController implements Initializable {
 
     @FXML private Pane visualizationPane;
     @FXML private Button startButton;
@@ -55,60 +45,59 @@ public class AlgorithmLabController implements Initializable {
     @FXML private Button nextButton;
     @FXML private Button restartButton;
     @FXML private Slider speedSlider;
-    @FXML private CheckBox quizModeCheckBox;
+    @FXML private RadioButton slowSpeedRadio;
+    @FXML private RadioButton mediumSpeedRadio;
+    @FXML private RadioButton fastSpeedRadio;
     @FXML private Label currentStepLabel;
     @FXML private Label totalStepsLabel;
     @FXML private Label comparisonsLabel;
     @FXML private Label swapsLabel;
     @FXML private Label executionTimeLabel;
     @FXML private Label theoreticalComplexityLabel;
-    @FXML private Label narrationLabel;
-    private Timeline playTimeline;
     @FXML private ProgressBar progressBar;
+    @FXML private Label narrationLabel;
+    @FXML private Label completionLabel;
+    @FXML private Label sourceInstructionLabel;
     @FXML private VBox pseudocodeBox;
-    //@FXML private Label narrationLabel;
-    private final List<Label> pseudocodeLabels = new ArrayList<>();
-    private final RunDAO runDAO = new RunDAO();
-    private final QuizResultDAO quizResultDAO = new QuizResultDAO();
-    private int quizScore = 0;
-    private int quizTotal = 0;
-    private int lastRunId = -1;
+    @FXML private HBox distanceTrackerBox;
+
 
     private int[] currentInput = {5, 2, 9, 1, 5, 6};
     private int currentStepIndex = 0;
+    private Timeline playTimeline;
 
-    // Sorting
     private final BarVisualizer visualizer = new BarVisualizer();
     private List<AlgorithmStep> currentSteps;
     private Algorithm currentAlgorithm;
 
-    // Graph
     private final GraphVisualizer graphVisualizer = new GraphVisualizer();
     private List<GraphStep> currentGraphSteps;
     private Graph currentGraph;
     private GraphAlgorithm currentGraphAlgorithm;
+    private final Map<String, Label> trackerLabels = new HashMap<>();
+
+    private final RunDAO runDAO = new RunDAO();
+    private final QuizResultDAO quizResultDAO = new QuizResultDAO();
+    private int lastRunId = -1;
+    private int quizScore = 0;
+    private int quizTotal = 0;
+
+    private final List<Label> pseudocodeLabels = new ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        visualizationPane.prefWidthProperty().bind(((javafx.scene.layout.Region) visualizationPane.getParent()).widthProperty());
-        visualizationPane.prefHeightProperty().bind(((javafx.scene.layout.Region) visualizationPane.getParent()).heightProperty());
-        AlgorithmSession session = AlgorithmSession.getInstance();
-
-        if (session.isCustomInput() && session.getCustomValues() != null) {
-            currentInput = session.getCustomValues();
-        }
-
-        runSelectedAlgorithm();
+        setupStart();
     }
 
-    @FXML
-    private void handleStart() {
-        startAutoPlay();
-    }
-
-    private void runSelectedAlgorithm() {
+    private void setupStart() {
         quizScore = 0;
         quizTotal = 0;
+        lastRunId = -1;
+        completionLabel.setVisible(false);
+        progressBar.setStyle("");
+        sourceInstructionLabel.setText("");
+        if (playTimeline != null) playTimeline.stop();
+
         AlgorithmSession session = AlgorithmSession.getInstance();
         String selected = session.getSelectedAlgorithm();
 
@@ -116,45 +105,55 @@ public class AlgorithmLabController implements Initializable {
             System.out.println("No algorithm selected");
             return;
         }
+
         loadPseudocode(selected);
         currentSteps = null;
         currentGraphSteps = null;
 
-        if (selected.equals("Dijkstra") || selected.equals("Bellman-Ford")) {
-            currentGraphAlgorithm = selected.equals("Dijkstra") ? new Dijkstra() : new BellmanFord();
+        if (isGraphAlgorithmName(selected)) {
+            currentGraphAlgorithm = createGraphAlgorithm(selected);
 
-            String startNode;
             if (session.isCustomGraph()) {
                 currentGraph = GraphInputParser.parse(session.getVertexCount(), session.getEdgesText());
-                startNode = "0";
             } else {
                 currentGraph = buildExampleGraph();
-                startNode = "A";
             }
 
-            String finalStartNode = startNode;
-            AppExecutor.submit(() -> {
-                List<GraphStep> computedSteps = currentGraphAlgorithm.run(currentGraph, finalStartNode);
+            buildDistanceTracker(currentGraph);
 
-                Platform.runLater(() -> {
-                    currentGraphSteps = computedSteps;
-                    currentStepIndex = 0;
-                    graphVisualizer.initialize(visualizationPane, currentGraph);
-                    renderCurrentGraphStep();
+            boolean needsSource = !(selected.equals("Kruskal's Algorithm") || selected.equals("Floyd-Warshall"));
+
+            if (needsSource) {
+                setPlaybackDisabled(true);
+                sourceInstructionLabel.setText("Click a node to choose the starting vertex");
+                graphVisualizer.enableSourceSelection(visualizationPane, currentGraph, this::onSourceSelected);
+            } else {
+                graphVisualizer.initialize(visualizationPane, currentGraph);
+                sourceInstructionLabel.setText("");
+                setPlaybackDisabled(true);
+                AppExecutor.submit(() -> {
+                    List<GraphStep> computedSteps = currentGraphAlgorithm.run(currentGraph, "0");
+                    Platform.runLater(() -> {
+                        currentGraphSteps = computedSteps;
+                        currentStepIndex = 0;
+                        setPlaybackDisabled(false);
+                        renderCurrentGraphStep();
+                    });
                 });
-            });
-
+            }
             return;
         }
 
         currentAlgorithm = switch (selected) {
             case "Insertion Sort" -> new InsertionSort();
             case "Quick Sort" -> new QuickSort();
+            case "Merge Sort" -> new com.codecanvas.algorithm.sorting.MergeSort();
             default -> null;
         };
 
         if (currentAlgorithm == null) return;
 
+        setPlaybackDisabled(true);
         AppExecutor.submit(() -> {
             List<AlgorithmStep> computedSteps = currentAlgorithm.run(currentInput);
 
@@ -162,74 +161,101 @@ public class AlgorithmLabController implements Initializable {
                 currentSteps = computedSteps;
                 currentStepIndex = 0;
                 visualizer.initialize(visualizationPane, currentInput);
+                setPlaybackDisabled(false);
                 renderCurrentStep();
             });
         });
     }
+    private boolean isGraphAlgorithmName(String name) {
+        return name.equals("Dijkstra") || name.equals("Bellman-Ford") || name.equals("Prim's Algorithm")
+                || name.equals("Kruskal's Algorithm") || name.equals("Floyd-Warshall")
+                || name.equals("BFS") || name.equals("DFS");
+    }
 
-    @FXML
-    private void handleNext() {
-        if (playTimeline != null) playTimeline.stop();
-        if (currentGraphSteps != null) {
-            if (currentStepIndex < currentGraphSteps.size() - 1) {
-                currentStepIndex++;
+    private GraphAlgorithm createGraphAlgorithm(String name) {
+        return switch (name) {
+            case "Dijkstra" -> new Dijkstra();
+            case "Bellman-Ford" -> new BellmanFord();
+            case "Prim's Algorithm" -> new com.codecanvas.algorithm.graph.Prims();
+            case "Kruskal's Algorithm" -> new com.codecanvas.algorithm.graph.Kruskal();
+            case "Floyd-Warshall" -> new com.codecanvas.algorithm.graph.FloydWarshall();
+            case "BFS" -> new com.codecanvas.algorithm.graph.BFS();
+            case "DFS" -> new com.codecanvas.algorithm.graph.DFS();
+            default -> null;
+        };
+    }
+
+    // Fires once the user clicks a node on the gray graph — that click IS the source pick
+    private void onSourceSelected(String nodeId) {
+        graphVisualizer.markSource(nodeId);
+        sourceInstructionLabel.setText("Source: " + nodeId);
+
+        AppExecutor.submit(() -> {
+            List<GraphStep> computedSteps = currentGraphAlgorithm.run(currentGraph, nodeId);
+
+            Platform.runLater(() -> {
+                currentGraphSteps = computedSteps;
+                currentStepIndex = 0;
+                setPlaybackDisabled(false);
                 renderCurrentGraphStep();
-            }
-        } else if (currentSteps != null) {
-            if (currentStepIndex < currentSteps.size() - 1) {
-                currentStepIndex++;
-                renderCurrentStep();
+            });
+        });
+    }
+
+    private void setPlaybackDisabled(boolean disabled) {
+        startButton.setDisable(disabled);
+        pauseButton.setDisable(disabled);
+        previousButton.setDisable(disabled);
+        nextButton.setDisable(disabled);
+        restartButton.setDisable(disabled);
+    }
+
+    private void buildDistanceTracker(Graph graph) {
+        distanceTrackerBox.getChildren().clear();
+        trackerLabels.clear();
+        for (GraphNode node : graph.getNodes()) {
+            Label label = new Label(node.getId() + ": ∞");
+            label.setStyle("-fx-background-color: #ecf0f1; -fx-padding: 6 10; -fx-background-radius: 6; -fx-font-weight: bold;");
+            trackerLabels.put(node.getId(), label);
+            distanceTrackerBox.getChildren().add(label);
+        }
+    }
+
+    private void updateDistanceTracker(GraphStep step) {
+        for (Map.Entry<String, Integer> entry : step.getDistances().entrySet()) {
+            Label label = trackerLabels.get(entry.getKey());
+            if (label != null) {
+                int dist = entry.getValue();
+                label.setText(entry.getKey() + ": " + (dist == Integer.MAX_VALUE ? "∞" : dist));
             }
         }
     }
 
     @FXML
-    private void handlePrevious() {
-        if (playTimeline != null) playTimeline.stop();
-        if (currentGraphSteps != null) {
-            if (currentStepIndex > 0) {
-                currentStepIndex--;
-                renderCurrentGraphStep();
-            }
-        } else if (currentSteps != null) {
-            if (currentStepIndex > 0) {
-                currentStepIndex--;
-                renderCurrentStep();
-            }
-        }
+    private void handleSpeedRadio() {
+        if (slowSpeedRadio.isSelected()) speedSlider.setValue(2);
+        else if (fastSpeedRadio.isSelected()) speedSlider.setValue(9);
+        else speedSlider.setValue(5);
     }
 
     @FXML
-    private void handleRestart() {
-        if (playTimeline != null) playTimeline.stop();
-        if (currentGraphSteps != null) {
-            currentStepIndex = 0;
-            renderCurrentGraphStep();
-        } else if (currentSteps != null) {
-            currentStepIndex = 0;
-            renderCurrentStep();
-        }
+    private void handleStart() {
+        startAutoPlay();
     }
 
     @FXML
     private void handlePause() {
-        if (playTimeline != null) {
-            playTimeline.stop();
-        }
+        if (playTimeline != null) playTimeline.stop();
     }
 
     private void startAutoPlay() {
-        if (playTimeline != null) {
-            playTimeline.stop();
-        }
-        double speed = speedSlider.getValue(); // 1 (slow) to 10 (fast)
+        if (playTimeline != null) playTimeline.stop();
+        double speed = speedSlider.getValue();
         double intervalMs = 1100 - (speed * 100);
 
         playTimeline = new Timeline(new KeyFrame(Duration.millis(intervalMs), e -> {
             boolean advanced = advanceOneStep();
-            if (!advanced) {
-                playTimeline.stop();
-            }
+            if (!advanced) playTimeline.stop();
         }));
         playTimeline.setCycleCount(Timeline.INDEFINITE);
         playTimeline.play();
@@ -254,6 +280,32 @@ public class AlgorithmLabController implements Initializable {
         return false;
     }
 
+    @FXML
+    private void handleNext() {
+        if (playTimeline != null) playTimeline.stop();
+        advanceOneStep();
+    }
+
+    @FXML
+    private void handlePrevious() {
+        if (playTimeline != null) playTimeline.stop();
+        if (currentGraphSteps != null) {
+            if (currentStepIndex > 0) { currentStepIndex--; renderCurrentGraphStep(); }
+        } else if (currentSteps != null) {
+            if (currentStepIndex > 0) { currentStepIndex--; renderCurrentStep(); }
+        }
+    }
+
+    @FXML
+    private void handleRestart() {
+        if (playTimeline != null) playTimeline.stop();
+        currentStepIndex = 0;
+        completionLabel.setVisible(false);
+        progressBar.setStyle("");
+        if (currentGraphSteps != null) renderCurrentGraphStep();
+        else if (currentSteps != null) renderCurrentStep();
+    }
+
     private void renderCurrentStep() {
         AlgorithmStep step = currentSteps.get(currentStepIndex);
         visualizer.animateToStep(step);
@@ -272,22 +324,67 @@ public class AlgorithmLabController implements Initializable {
         boolean hasNextStep = currentStepIndex < currentSteps.size() - 1;
 
         if (quizOn && everyThirdStep && hasNextStep) {
-            showQuizPopup(step, currentSteps.get(currentStepIndex + 1));
+            if (playTimeline != null) playTimeline.stop();
+            showSortQuizPopup(step, currentSteps.get(currentStepIndex + 1));
         }
 
         if (currentStepIndex == currentSteps.size() - 1) {
+            showCompletion("✅ Sorting Complete!");
             saveRunToDatabase(currentAlgorithm.getName(), currentInput.length, currentSteps.size(),
                     step.getComparisons(), step.getSwaps());
-
-            if (quizOn && quizTotal > 0) {
-                saveQuizResult();
-            }
+            if (quizOn && quizTotal > 0) saveQuizResult(currentAlgorithm.getName());
         }
     }
 
-    private void showQuizPopup(AlgorithmStep currentStep, AlgorithmStep nextStep) {
-        QuizQuestion question = QuizGenerator.buildQuestion(currentStep, nextStep);
+    private void renderCurrentGraphStep() {
+        GraphStep step = currentGraphSteps.get(currentStepIndex);
+        boolean isFinal = currentStepIndex == currentGraphSteps.size() - 1;
+        graphVisualizer.animateToStep(step, isFinal);
+        updateDistanceTracker(step);
 
+        currentStepLabel.setText("Step: " + (currentStepIndex + 1));
+        totalStepsLabel.setText("Total Steps: " + currentGraphSteps.size());
+        comparisonsLabel.setText("Comparisons: " + step.getComparisons());
+        swapsLabel.setText("Relaxations: " + step.getRelaxations());
+        theoreticalComplexityLabel.setText("Theoretical: " + currentGraphAlgorithm.getTheoreticalComplexity());
+        progressBar.setProgress((currentStepIndex + 1) / (double) currentGraphSteps.size());
+        narrationLabel.setText(step.getDescription());
+        highlightLine(step.getCurrentLine());
+
+        boolean quizOn = AlgorithmSession.getInstance().isQuizMode();
+        boolean everyThirdStep = (currentStepIndex + 1) % 3 == 0;
+        boolean hasNextStep = currentStepIndex < currentGraphSteps.size() - 1;
+
+        if (quizOn && everyThirdStep && hasNextStep) {
+            if (playTimeline != null) playTimeline.stop();
+            showGraphQuizPopup(step, currentGraphSteps.get(currentStepIndex + 1));
+        }
+
+        if (isFinal) {
+            showCompletion("✅ Shortest paths found!");
+            saveGraphRunToDatabase(currentGraphAlgorithm.getName(), currentGraph.getNodes().size(),
+                    currentGraphSteps.size(), step.getComparisons(), step.getRelaxations());
+            if (quizOn && quizTotal > 0) saveQuizResult(currentGraphAlgorithm.getName());
+        }
+    }
+
+    private void showCompletion(String message) {
+        completionLabel.setText(message);
+        completionLabel.setVisible(true);
+        progressBar.setStyle("-fx-accent: #2ecc71;");
+    }
+
+    private void showSortQuizPopup(AlgorithmStep currentStep, AlgorithmStep nextStep) {
+        QuizQuestion question = QuizGenerator.buildQuestion(currentStep, nextStep);
+        showQuizDialog(question);
+    }
+
+    private void showGraphQuizPopup(GraphStep currentStep, GraphStep nextStep) {
+        QuizQuestion question = QuizGenerator.buildGraphQuestion(currentStep, nextStep);
+        showQuizDialog(question);
+    }
+
+    private void showQuizDialog(QuizQuestion question) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Quiz");
         dialog.setHeaderText(question.getQuestionText());
@@ -311,10 +408,7 @@ public class AlgorithmLabController implements Initializable {
             if (buttonType == submitButtonType) {
                 int selectedIndex = -1;
                 for (int i = 0; i < radioButtons.size(); i++) {
-                    if (radioButtons.get(i).isSelected()) {
-                        selectedIndex = i;
-                        break;
-                    }
+                    if (radioButtons.get(i).isSelected()) { selectedIndex = i; break; }
                 }
 
                 quizTotal++;
@@ -333,52 +427,23 @@ public class AlgorithmLabController implements Initializable {
         dialog.showAndWait();
     }
 
-    private void saveQuizResult() {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        QuizResult result = new QuizResult(lastRunId, currentAlgorithm.getName(), quizScore, quizTotal, timestamp);
-        AppExecutor.submit(() -> quizResultDAO.insertResult(result));
-    }
-    private void renderCurrentGraphStep() {
-        GraphStep step = currentGraphSteps.get(currentStepIndex);
-        graphVisualizer.animateToStep(step);
-
-        currentStepLabel.setText("Step: " + (currentStepIndex + 1));
-        totalStepsLabel.setText("Total Steps: " + currentGraphSteps.size());
-        comparisonsLabel.setText("Comparisons: " + step.getComparisons());
-        swapsLabel.setText("Relaxations: " + step.getRelaxations());
-        theoreticalComplexityLabel.setText("Theoretical: " + currentGraphAlgorithm.getTheoreticalComplexity());
-        progressBar.setProgress((currentStepIndex + 1) / (double) currentGraphSteps.size());
-        narrationLabel.setText(step.getDescription());
-        highlightLine(step.getCurrentLine());
-
-        if (currentStepIndex == currentGraphSteps.size() - 1) {
-            saveRunToDatabase(currentGraphAlgorithm.getName(), currentGraph.getNodes().size(),
-                    currentGraphSteps.size(), step.getComparisons(), step.getRelaxations());
-        }
-    }
-
     private void saveRunToDatabase(String algorithmName, int inputSize, int steps, int comparisons, int swaps) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         Run run = new Run(algorithmName, "Custom", inputSize, steps, comparisons, swaps, 0, timestamp);
-        AppExecutor.submit(() -> {
-            int newRunId = runDAO.insertRun(run);
-            Platform.runLater(() -> lastRunId = newRunId);
-        });
+        lastRunId = runDAO.insertRun(run);
     }
 
-    private Graph buildExampleGraph() {
-        Graph graph = new Graph();
-        graph.addNode(new GraphNode("A", 50, 50));
-        graph.addNode(new GraphNode("B", 200, 50));
-        graph.addNode(new GraphNode("C", 50, 200));
-        graph.addNode(new GraphNode("D", 200, 200));
+    private void saveGraphRunToDatabase(String algorithmName, int vertexCount, int steps, int comparisons, int relaxations) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Run run = new Run(algorithmName, "Custom", vertexCount, steps, comparisons, relaxations, 0, timestamp);
+        lastRunId = runDAO.insertRun(run);
+    }
 
-        graph.addEdge(new GraphEdge("A", "B", 4));
-        graph.addEdge(new GraphEdge("A", "C", 1));
-        graph.addEdge(new GraphEdge("C", "B", 2));
-        graph.addEdge(new GraphEdge("B", "D", 5));
-        graph.addEdge(new GraphEdge("C", "D", 8));
-        return graph;
+    private void saveQuizResult(String algorithmName) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Integer runId = lastRunId != -1 ? lastRunId : null;
+        QuizResult result = new QuizResult(runId, algorithmName, quizScore, quizTotal, timestamp);
+        AppExecutor.submit(() -> quizResultDAO.insertResult(result));
     }
 
     private void loadPseudocode(String algorithmName) {
@@ -387,6 +452,8 @@ public class AlgorithmLabController implements Initializable {
 
         for (String line : PseudocodeProvider.getLines(algorithmName)) {
             Label label = new Label(line.isEmpty() ? " " : line);
+            label.setWrapText(true);
+            label.setMaxWidth(250);
             label.setStyle("-fx-font-family: monospace;");
             pseudocodeLabels.add(label);
             pseudocodeBox.getChildren().add(label);
@@ -403,4 +470,18 @@ public class AlgorithmLabController implements Initializable {
         }
     }
 
+    private Graph buildExampleGraph() {
+        Graph graph = new Graph();
+        graph.addNode(new GraphNode("A", 50, 50));
+        graph.addNode(new GraphNode("B", 200, 50));
+        graph.addNode(new GraphNode("C", 50, 200));
+        graph.addNode(new GraphNode("D", 200, 200));
+
+        graph.addEdge(new GraphEdge("A", "B", 4));
+        graph.addEdge(new GraphEdge("A", "C", 1));
+        graph.addEdge(new GraphEdge("C", "B", 2));
+        graph.addEdge(new GraphEdge("B", "D", 5));
+        graph.addEdge(new GraphEdge("C", "D", 8));
+        return graph;
+    }
 }

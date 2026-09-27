@@ -15,6 +15,6 @@ public class SplashController {
 
     @FXML
     private void handleGetStarted() {
-        SceneManager.switchTo("Dashboard.fxml");
+        SceneManager.switchTo("Login.fxml");
     }
 }

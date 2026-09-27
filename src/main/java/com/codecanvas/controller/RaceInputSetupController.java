@@ -7,7 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 
 
-public class RaceInputSetupController {
+public class RaceInputSetupController extends BaseController{
 
     @FXML private TextField custom1Field;
     @FXML private TextField custom2Field;

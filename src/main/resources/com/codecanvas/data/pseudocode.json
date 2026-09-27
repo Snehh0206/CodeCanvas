@@ -37,5 +37,51 @@
     "    for each edge (u, v, weight):",
     "    if distance[u] + weight < distance[v]:",
     "        update distance[v]"
+  ],
+  "Prim's Algorithm": [
+    "for each node: cost = infinity",
+    "cost[start] = 0",
+    "pick unvisited node with min cost, add to MST",
+    "for each edge (current -> neighbor):",
+    "if weight < cost[neighbor]: update cost[neighbor]"
+  ],
+  "Kruskal's Algorithm": [
+    "sort all edges by weight, ascending",
+    "for each edge in sorted order:",
+    "if find(u) == find(v): skip (would form cycle)",
+    "union(u, v)",
+    "add edge to MST"
+  ],
+  "Floyd-Warshall": [
+    "dist[i][j] = weight(i,j) or infinity",
+    "for k = each node:",
+    "  for i = each node:",
+    "    for j = each node:",
+    "if dist[i][k] + dist[k][j] < dist[i][j]:",
+    "        update dist[i][j]",
+    "return dist matrix",
+    "done"
+  ],
+  "BFS": [
+    "queue = [start], visited = {start}",
+    "dequeue current node",
+    "for each edge (current -> neighbor):",
+    "if not visited: visit and enqueue"
+  ],
+  "DFS": [
+    "mark start as visited",
+    "visit current node",
+    "for each edge (current -> neighbor):",
+    "if not visited: recurse into neighbor"
+  ],
+  "Merge Sort": [
+    "mergeSort(arr, left, right):",
+    "    if left < right: split at mid",
+    "",
+    "",
+    "    compare left[i] and right[j]",
+    "    place smaller value, advance pointer",
+    "    merge finished for this range",
+    "fully merged and sorted"
   ]
 }

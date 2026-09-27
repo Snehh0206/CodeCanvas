@@ -1,0 +1,146 @@
+/* =========================================
+   CODECANVAS — NEON NIGHT
+   ========================================= */
+
+.dashboard {
+    -fx-background-color: #0E1017;
+}
+
+
+/* ---------- HEADER ---------- */
+
+.header {
+    -fx-background-color: #121520;
+    -fx-border-color: #2B3042;
+    -fx-border-width: 0 0 1 0;
+}
+
+.title {
+    -fx-text-fill: #E8EAF2;
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+}
+
+.subtitle {
+    -fx-text-fill: #8E94A8;
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 12px;
+}
+
+
+/* ---------- SIDEBAR ---------- */
+
+.sidebar {
+    -fx-background-color: #121520;
+    -fx-border-color: #2B3042;
+    -fx-border-width: 0 1 0 0;
+}
+
+.section-label {
+    -fx-text-fill: #55D6FF;
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+
+/* ---------- MENU ---------- */
+
+.menu-button {
+    -fx-background-color: transparent;
+
+    -fx-text-fill: #B8BDCC;
+
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 12 0 12;
+
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+
+    -fx-cursor: hand;
+}
+
+.menu-button:hover {
+    -fx-background-color: #1C2030;
+    -fx-text-fill: #55D6FF;
+    -fx-border-color: #30384D;
+}
+
+
+/* ---------- ACTIVE ---------- */
+
+.active-button {
+    -fx-background-color: #39235A;
+
+    -fx-text-fill: #C89BFF;
+
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 12 0 12;
+
+    -fx-border-color: #8D5DD3;
+    -fx-border-width: 1;
+
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+
+    -fx-cursor: hand;
+}
+
+.active-button:hover {
+    -fx-background-color: #482B70;
+    -fx-text-fill: #D5B8FF;
+}
+
+
+/* ---------- CONTENT ---------- */
+
+.content {
+    -fx-background-color: #0E1017;
+}
+
+.heading {
+    -fx-text-fill: #E8EAF2;
+
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.description {
+    -fx-text-fill: #8E94A8;
+
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 13px;
+}
+
+
+/* ---------- STATS ---------- */
+
+.stats-card {
+    -fx-background-color: #151925;
+
+    -fx-border-color: #30364A;
+    -fx-border-width: 1;
+
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.stat {
+    -fx-text-fill: #C8CCD8;
+
+    -fx-font-family: "Trebuchet MS";
+    -fx-font-size: 13px;
+}

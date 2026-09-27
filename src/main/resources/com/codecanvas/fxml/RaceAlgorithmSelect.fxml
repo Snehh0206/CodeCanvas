@@ -6,11 +6,18 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.layout.HBox?>
 <VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.RaceAlgorithmSelectController">
     <padding>
         <Insets top="30.0" right="30.0" bottom="30.0" left="30.0" />
     </padding>
     <children>
+        <HBox spacing="10.0">
+            <children>
+                <Button text="← Back" onAction="#handleBack" />
+                <Button text="Dashboard" onAction="#handleDashboard" />
+            </children>
+        </HBox>
         <Label text="Pick Algorithm 1" />
         <ComboBox fx:id="algorithm1ComboBox" prefWidth="200.0" />
         <Label text="Pick Algorithm 2" />

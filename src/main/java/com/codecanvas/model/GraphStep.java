@@ -9,6 +9,7 @@ public class GraphStep {
     private final String activeEdgeTo;
     private final List<String> visitedNodes;
     private final Map<String, Integer> distances;
+    private final Map<String, String> predecessors;
     private final int comparisons;
     private final int relaxations;
     private final String description;
@@ -16,12 +17,14 @@ public class GraphStep {
 
     public GraphStep(String currentNodeId, String activeEdgeFrom, String activeEdgeTo,
                      List<String> visitedNodes, Map<String, Integer> distances,
+                     Map<String, String> predecessors,
                      int comparisons, int relaxations, String description, int currentLine) {
         this.currentNodeId = currentNodeId;
         this.activeEdgeFrom = activeEdgeFrom;
         this.activeEdgeTo = activeEdgeTo;
         this.visitedNodes = visitedNodes;
         this.distances = distances;
+        this.predecessors = predecessors;
         this.comparisons = comparisons;
         this.relaxations = relaxations;
         this.description = description;
@@ -33,6 +36,7 @@ public class GraphStep {
     public String getActiveEdgeTo() { return activeEdgeTo; }
     public List<String> getVisitedNodes() { return visitedNodes; }
     public Map<String, Integer> getDistances() { return distances; }
+    public Map<String, String> getPredecessors() { return predecessors; }
     public int getComparisons() { return comparisons; }
     public int getRelaxations() { return relaxations; }
     public String getDescription() { return description; }

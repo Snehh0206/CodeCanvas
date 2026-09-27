@@ -11,7 +11,7 @@ import javafx.scene.control.ComboBox;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class RaceAlgorithmSelectController implements Initializable {
+public class RaceAlgorithmSelectController extends BaseController implements Initializable {
 
     @FXML private ComboBox<String> algorithm1ComboBox;
     @FXML private ComboBox<String> algorithm2ComboBox;
@@ -19,13 +19,12 @@ public class RaceAlgorithmSelectController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         String category = RaceSession.getInstance().getCategory();
-
         if (category.equals("Sorting")) {
-            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort"));
-            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort"));
+            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort", "Merge Sort"));
+            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Insertion Sort", "Quick Sort", "Merge Sort"));
         } else {
-            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford"));
-            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford"));
+            algorithm1ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford", "Prim's Algorithm", "Kruskal's Algorithm"));
+            algorithm2ComboBox.setItems(FXCollections.observableArrayList("Dijkstra", "Bellman-Ford", "Prim's Algorithm", "Kruskal's Algorithm"));
         }
     }
 
@@ -42,7 +41,9 @@ public class RaceAlgorithmSelectController implements Initializable {
         RaceSession session = RaceSession.getInstance();
         session.setAlgorithm1Name(name1);
         session.setAlgorithm2Name(name2);
+        session.setCaseBattle(false);
 
-        SceneManager.switchTo("RaceInputSetup.fxml");
+        SceneManager.switchTo(session.getCategory().equals("Graph")
+                ? "RaceGraphInputSetup.fxml" : "RaceSortingInputSetup.fxml");
     }
 }
