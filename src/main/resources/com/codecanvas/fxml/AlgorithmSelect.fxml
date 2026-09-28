@@ -3,31 +3,58 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.AlgorithmSelectController">
-    <padding>
-        <Insets top="30.0" right="30.0" bottom="30.0" left="30.0" />
-    </padding>
+<BorderPane prefHeight="700.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.AlgorithmSelectController">
 
-    <children>
+    <top>
         <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding><Insets top="12.0" right="16.0" bottom="6.0" left="16.0" /></padding>
             <children>
                 <Button text="← Back" onAction="#handleBack" />
                 <Button text="Dashboard" onAction="#handleDashboard" />
             </children>
         </HBox>
-        <Label text="Choose an Algorithm" style="-fx-font-size: 22px;" />
-        <Button fx:id="insertionSortButton" text="Insertion Sort" onAction="#handleInsertionSort" prefWidth="200.0" />
-        <Button fx:id="quickSortButton" text="Quick Sort" onAction="#handleQuickSort" prefWidth="200.0" />
-        <Button text="Merge Sort" onAction="#handleMergeSort" />
-        <Button fx:id="dijkstraButton" text="Dijkstra" onAction="#handleDijkstra" prefWidth="200.0" />
-        <Button text="Prim's Algorithm" onAction="#handlePrims" />
-        <Button text="Kruskal's Algorithm" onAction="#handleKruskal" />
-        <Button text="Floyd-Warshall" onAction="#handleFloydWarshall" />
-        <Button text="BFS" onAction="#handleBFS" />
-        <Button text="DFS" onAction="#handleDFS" />
-        <Button fx:id="bellmanFordButton" text="Bellman-Ford" onAction="#handleBellmanFord" prefWidth="200.0" />
-    </children>
-</VBox>
+    </top>
+
+    <center>
+        <ScrollPane styleClass="edge-to-edge" fitToWidth="true">
+            <content>
+                <VBox spacing="16.0" alignment="TOP_CENTER">
+                    <padding><Insets top="16.0" right="28.0" bottom="24.0" left="28.0" /></padding>
+                    <children>
+                        <Label text="Choose an algorithm" styleClass="welcome-title" />
+                        <Label text="Pick one and watch it run step by step" styleClass="subtitle" />
+
+                        <Label text="SORTING" styleClass="card-title" />
+                        <FlowPane hgap="14.0" vgap="14.0" alignment="CENTER">
+                            <children>
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Insertion Sort&#10;O(n²)" onAction="#handleInsertionSort" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Quick Sort&#10;O(n log n)" onAction="#handleQuickSort" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Merge Sort&#10;O(n log n)" onAction="#handleMergeSort" />
+                            </children>
+                        </FlowPane>
+
+                        <Label text="GRAPH" styleClass="card-title" />
+                        <FlowPane hgap="14.0" vgap="14.0" alignment="CENTER">
+                            <children>
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Dijkstra&#10;O(V²)" onAction="#handleDijkstra" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Bellman-Ford&#10;O(V·E)" onAction="#handleBellmanFord" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Prim's Algorithm&#10;O(V²)" onAction="#handlePrims" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Kruskal's Algorithm&#10;O(E log E)" onAction="#handleKruskal" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="Floyd-Warshall&#10;O(V³)" onAction="#handleFloydWarshall" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="BFS&#10;O(V + E)" onAction="#handleBFS" />
+                                <Button styleClass="algo-card" prefWidth="190.0" prefHeight="80.0" text="DFS&#10;O(V + E)" onAction="#handleDFS" />
+                            </children>
+                        </FlowPane>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

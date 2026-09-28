@@ -1,6 +1,7 @@
 package com.codecanvas.model;
 
 import com.codecanvas.model.QuizQuestion;
+import com.codecanvas.model.Graph;
 import java.util.List;
 
 public class AlgorithmSession {
@@ -13,6 +14,7 @@ public class AlgorithmSession {
     private boolean quizMode;
     private boolean customGraph;
     private int vertexCount;
+    private Graph liveGraph;
     private String edgesText;
     private List<QuizQuestion> quizQuestions;
     private int quizScore = 0;
@@ -23,6 +25,8 @@ public class AlgorithmSession {
 
     public int getQuizScore() { return quizScore; }
     public void setQuizScore(int quizScore) { this.quizScore = quizScore; }
+    public Graph getLiveGraph() { return liveGraph; }
+    public void setLiveGraph(Graph liveGraph) { this.liveGraph = liveGraph; }
 
     public int getQuizQuestionsAnswered() { return quizQuestionsAnswered; }
     public void setQuizQuestionsAnswered(int answered) { this.quizQuestionsAnswered = answered; }

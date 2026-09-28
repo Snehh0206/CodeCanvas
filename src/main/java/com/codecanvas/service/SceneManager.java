@@ -55,7 +55,7 @@ public class SceneManager {
             Scene scene = primaryStage.getScene();
 
             if (scene == null) {
-                scene = new Scene(root, 900, 600);
+                scene = new Scene(root, 1100, 700);
                 primaryStage.setScene(scene);
             } else {
                 scene.setRoot(root);

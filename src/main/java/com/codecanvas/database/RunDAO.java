@@ -146,6 +146,21 @@ public class RunDAO {
         return 0;
     }
 
+    public List<Run> getRecentRuns(int limit) {
+        List<Run> runs = new ArrayList<>();
+        String sql = "SELECT * FROM runs WHERE user_id = ? ORDER BY id DESC LIMIT ?";
+        try (Connection conn = DatabaseHelper.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, com.codecanvas.model.UserSession.getInstance().getUserId());
+            stmt.setInt(2, limit);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) runs.add(mapRow(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return runs;
+    }
+
     public String getMostRecentAlgorithm() {
         String sql = "SELECT algorithm FROM runs WHERE user_id = ? ORDER BY id DESC LIMIT 1";
         try (Connection conn = DatabaseHelper.connect();

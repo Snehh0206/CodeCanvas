@@ -12,33 +12,38 @@
 
 <VBox spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.SettingsController">
     <children>
-        <HBox spacing="10.0">
+        <HBox spacing="10.0" alignment="CENTER_LEFT">
             <children>
                 <Button text="← Back" onAction="#handleBack" />
                 <Button text="Dashboard" onAction="#handleDashboard" />
+                <Label text="Settings" styleClass="welcome-title" />
             </children>
         </HBox>
 
-        <Label text="Theme" />
-        <HBox spacing="10.0">
+        <VBox styleClass="card" spacing="15.0">
             <children>
-                <RadioButton fx:id="lightModeRadio" text="Light Mode">
-                    <toggleGroup>
-                        <ToggleGroup fx:id="themeGroup" />
-                    </toggleGroup>
-                </RadioButton>
-                <RadioButton fx:id="darkModeRadio" text="Dark Mode" toggleGroup="$themeGroup" />
+                <Label text="Theme" />
+                <HBox spacing="10.0">
+                    <children>
+                        <RadioButton fx:id="lightModeRadio" text="Light Mode">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="themeGroup" />
+                            </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="darkModeRadio" text="Dark Mode" toggleGroup="$themeGroup" />
+                    </children>
+                </HBox>
+
+                <Label text="Sound" />
+                <CheckBox fx:id="soundCheckBox" text="Sound Effects Enabled" />
+                <Label text="Quiz Difficulty" />
+                <ComboBox fx:id="difficultyComboBox" />
+                <Label text="Animation" />
+                <CheckBox fx:id="animationCheckBox" text="Animation Enabled" />
+
+                <Button text="Save Settings" onAction="#handleSave" />
             </children>
-        </HBox>
-
-        <Label text="Sound" />
-        <CheckBox fx:id="soundCheckBox" text="Sound Effects Enabled" />
-        <Label text="Quiz Difficulty" />
-        <ComboBox fx:id="difficultyComboBox" />
-        <Label text="Animation" />
-        <CheckBox fx:id="animationCheckBox" text="Animation Enabled" />
-
-        <Button text="Save Settings" onAction="#handleSave" />
+        </VBox>
     </children>
     <padding>
         <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />

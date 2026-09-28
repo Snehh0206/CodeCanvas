@@ -8,17 +8,19 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.StatisticsController">
+<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.StatisticsController">
 
     <top>
-        <HBox spacing="10.0" BorderPane.alignment="CENTER_LEFT">
+        <HBox spacing="10.0" alignment="CENTER_LEFT" BorderPane.alignment="CENTER_LEFT">
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
             </padding>
             <children>
-                <Button onAction="#handleBack" text="← Back" />
-                <Button onAction="#handleDashboard" text="Dashboard" />
+                <Button text="← Back" onAction="#handleBack" />
+                <Button text="Dashboard" onAction="#handleDashboard" />
+                <Label text="Statistics" styleClass="welcome-title" />
                 <Label text="Algorithm:" />
                 <ComboBox fx:id="algorithmComboBox" onAction="#handleAlgorithmChange" />
             </children>
@@ -26,20 +28,27 @@
     </top>
 
     <center>
-        <LineChart fx:id="stepsChart" BorderPane.alignment="CENTER">
-            <xAxis>
-                <NumberAxis label="Input Size" fx:id="xAxis" />
-            </xAxis>
-            <yAxis>
-                <NumberAxis fx:id="yAxis" label="Steps" />
-            </yAxis>
-        </LineChart>
+        <VBox styleClass="card" BorderPane.alignment="CENTER">
+            <BorderPane.margin>
+                <Insets top="0.0" right="10.0" bottom="0.0" left="10.0" />
+            </BorderPane.margin>
+            <children>
+                <LineChart fx:id="stepsChart" VBox.vgrow="ALWAYS">
+                    <xAxis>
+                        <NumberAxis fx:id="xAxis" label="Input Size" />
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis fx:id="yAxis" label="Steps" />
+                    </yAxis>
+                </LineChart>
+            </children>
+        </VBox>
     </center>
 
     <bottom>
         <Label fx:id="noteLabel" text="Shows measured steps from your saved runs. Not the same as theoretical Big-O — this is observed data only." BorderPane.alignment="CENTER">
             <BorderPane.margin>
-                <Insets bottom="10.0" top="5.0" />
+                <Insets top="5.0" bottom="10.0" />
             </BorderPane.margin>
         </Label>
     </bottom>

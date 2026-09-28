@@ -34,6 +34,23 @@ public class GraphInputSetupController extends BaseController {
     }
 
     @FXML
+    private void handleFetchLiveGraph() {
+        new Thread(() -> {
+            try {
+                com.codecanvas.model.Graph liveGraph = com.codecanvas.service.GraphLiveDataFetcher.fetchLiveGraph();
+                javafx.application.Platform.runLater(() -> {
+                    AlgorithmSession.getInstance().setCustomGraph(true);
+                    AlgorithmSession.getInstance().setLiveGraph(liveGraph); // see AlgorithmSession change below
+                    SceneManager.switchTo("AlgorithmLab.fxml");
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() ->
+                        new Alert(Alert.AlertType.ERROR, "Couldn't fetch live graph — check internet connection").showAndWait());
+            }
+        }).start();
+    }
+
+    @FXML
     private void handleContinue() {
         AlgorithmSession session = AlgorithmSession.getInstance();
         session.setQuizMode(quizModeCheckBox.isSelected());

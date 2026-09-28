@@ -3,22 +3,37 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.RaceModeSelectController">
-    <children>
+<BorderPane prefHeight="700.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.RaceModeSelectController">
+
+    <top>
         <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding><Insets top="12.0" right="16.0" bottom="6.0" left="16.0" /></padding>
             <children>
                 <Button text="← Back" onAction="#handleBack" />
                 <Button text="Dashboard" onAction="#handleDashboard" />
             </children>
         </HBox>
-        <Label text="Choose Race Type" />
-        <Button fx:id="userInputButton" text="User Input Race" onAction="#handleUserInput" />
-        <Button fx:id="caseBattleButton" text="Case Battle" onAction="#handleCaseBattle" />
-    </children>
-    <padding>
-        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
-    </padding>
-</VBox>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="18.0">
+            <children>
+                <Label text="Choose a race type" styleClass="welcome-title" />
+                <Label text="Use your own data, or compare best and worst cases" styleClass="subtitle" />
+                <HBox alignment="CENTER" spacing="20.0">
+                    <children>
+                        <Button styleClass="algo-card" prefWidth="270.0" prefHeight="130.0" wrapText="true"
+                                text="User Input Race&#10;You choose the data" onAction="#handleUserInput" />
+                        <Button styleClass="algo-card" prefWidth="270.0" prefHeight="130.0" wrapText="true"
+                                text="Case Battle&#10;Best vs worst case, auto-generated data" onAction="#handleCaseBattle" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </center>
+
+</BorderPane>

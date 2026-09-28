@@ -3,22 +3,37 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.RaceCategorySelectController">
-    <padding>
-        <Insets top="30.0" right="30.0" bottom="30.0" left="30.0" />
-    </padding>
-    <children>
+<BorderPane prefHeight="700.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.RaceCategorySelectController">
+
+    <top>
         <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding><Insets top="12.0" right="16.0" bottom="6.0" left="16.0" /></padding>
             <children>
                 <Button text="← Back" onAction="#handleBack" />
                 <Button text="Dashboard" onAction="#handleDashboard" />
             </children>
         </HBox>
-        <Label text="Choose a Category" style="-fx-font-size: 22px;" />
-        <Button fx:id="sortingButton" text="Sorting" onAction="#handleSorting" prefWidth="200.0" />
-        <Button fx:id="graphButton" text="Graph" onAction="#handleGraph" prefWidth="200.0" />
-    </children>
-</VBox>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="18.0">
+            <children>
+                <Label text="Race Mode" styleClass="welcome-title" />
+                <Label text="What do you want to race?" styleClass="subtitle" />
+                <HBox alignment="CENTER" spacing="20.0">
+                    <children>
+                        <Button styleClass="algo-card" prefWidth="270.0" prefHeight="130.0" wrapText="true"
+                                text="Sorting&#10;Insertion, Quick, Merge" onAction="#handleSorting" />
+                        <Button styleClass="algo-card" prefWidth="270.0" prefHeight="130.0" wrapText="true"
+                                text="Graph&#10;Dijkstra, Bellman-Ford, Prim's, Kruskal's" onAction="#handleGraph" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </center>
+
+</BorderPane>

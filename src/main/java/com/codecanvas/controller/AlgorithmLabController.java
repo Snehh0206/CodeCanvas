@@ -60,6 +60,7 @@ public class AlgorithmLabController extends BaseController implements Initializa
     @FXML private Label sourceInstructionLabel;
     @FXML private VBox pseudocodeBox;
     @FXML private HBox distanceTrackerBox;
+    @FXML private VBox trackerCard;
 
 
     private int[] currentInput = {5, 2, 9, 1, 5, 6};
@@ -107,6 +108,9 @@ public class AlgorithmLabController extends BaseController implements Initializa
         }
 
         loadPseudocode(selected);
+        boolean isGraph = isGraphAlgorithmName(selected);
+        trackerCard.setVisible(isGraph);
+        trackerCard.setManaged(isGraph);
         currentSteps = null;
         currentGraphSteps = null;
 
@@ -140,6 +144,14 @@ public class AlgorithmLabController extends BaseController implements Initializa
                         renderCurrentGraphStep();
                     });
                 });
+            }
+            if (session.getLiveGraph() != null) {
+                currentGraph = session.getLiveGraph();
+                session.setLiveGraph(null); // consume it once
+            } else if (session.isCustomGraph()) {
+                currentGraph = GraphInputParser.parse(session.getVertexCount(), session.getEdgesText());
+            } else {
+                currentGraph = buildExampleGraph();
             }
             return;
         }
@@ -362,6 +374,7 @@ public class AlgorithmLabController extends BaseController implements Initializa
 
         if (isFinal) {
             showCompletion("✅ Shortest paths found!");
+            narrationLabel.setText(buildDistanceSummary(step));
             saveGraphRunToDatabase(currentGraphAlgorithm.getName(), currentGraph.getNodes().size(),
                     currentGraphSteps.size(), step.getComparisons(), step.getRelaxations());
             if (quizOn && quizTotal > 0) saveQuizResult(currentGraphAlgorithm.getName());
@@ -463,13 +476,20 @@ public class AlgorithmLabController extends BaseController implements Initializa
     private void highlightLine(int lineNumber) {
         for (int i = 0; i < pseudocodeLabels.size(); i++) {
             if (i == lineNumber - 1) {
-                pseudocodeLabels.get(i).setStyle("-fx-font-family: monospace; -fx-background-color: #ffe58a;");
+                pseudocodeLabels.get(i).setStyle("-fx-font-family: monospace; -fx-background-color: #ffe58a; -fx-text-fill: #1b0c1a;");
             } else {
                 pseudocodeLabels.get(i).setStyle("-fx-font-family: monospace;");
             }
         }
     }
-
+    private String buildDistanceSummary(GraphStep step) {
+        StringBuilder sb = new StringBuilder("Final shortest distances: ");
+        for (GraphNode node : currentGraph.getNodes()) {
+            Integer dist = step.getDistances().get(node.getId());
+            sb.append(node.getId()).append("=").append(dist == null || dist == Integer.MAX_VALUE ? "∞" : dist).append("  ");
+        }
+        return sb.toString();
+    }
     private Graph buildExampleGraph() {
         Graph graph = new Graph();
         graph.addNode(new GraphNode("A", 50, 50));

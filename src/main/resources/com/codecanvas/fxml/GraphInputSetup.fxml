@@ -26,6 +26,7 @@
             <children>
                 <Button text="Example Graph" onAction="#handleExampleGraph" />
                 <Button text="Custom Graph" onAction="#handleCustomGraphToggle" />
+                <Button text="Fetch Live Graph (API — exchange rates)" onAction="#handleFetchLiveGraph" />
                 <TextField fx:id="vertexCountField" promptText="Number of vertices, e.g. 5" disable="true" />
                 <TextField fx:id="edgeCountField" promptText="Number of edges, e.g. 6" disable="true" />
                 <Label text="Enter edges as u v w (vertex vertex weight — weight can be negative for Bellman-Ford)" />

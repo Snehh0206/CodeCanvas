@@ -11,98 +11,105 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="650.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.AlgorithmLabController">
+<BorderPane prefHeight="700.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.AlgorithmLabController">
 
     <top>
-        <HBox spacing="10.0" alignment="TOP_LEFT">
-            <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0" /></padding>
+        <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding><Insets top="12.0" right="16.0" bottom="6.0" left="16.0" /></padding>
             <children>
                 <Button text="← Back" onAction="#handleBack" />
                 <Button text="Dashboard" onAction="#handleDashboard" />
-                <Label fx:id="sourceInstructionLabel" text="" />
+                <Label text="Algorithm Lab" styleClass="welcome-title" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="sourceInstructionLabel" text="" styleClass="subtitle" />
             </children>
         </HBox>
     </top>
 
     <left>
-        <ScrollPane fitToWidth="true" prefWidth="280.0" pannable="true">
+        <ScrollPane styleClass="edge-to-edge" fitToWidth="true" hbarPolicy="NEVER" prefWidth="270.0">
             <content>
-                <VBox spacing="4.0">
-                    <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0" /></padding>
+                <VBox>
+                    <padding><Insets top="6.0" right="6.0" bottom="6.0" left="16.0" /></padding>
                     <children>
-                        <Label text="Pseudocode" style="-fx-font-weight: bold;" />
-                        <VBox fx:id="pseudocodeBox" spacing="3.0" />
+                        <VBox styleClass="card" spacing="6.0">
+                            <children>
+                                <Label text="PSEUDOCODE" styleClass="card-title" />
+                                <VBox fx:id="pseudocodeBox" spacing="3.0" />
+                            </children>
+                        </VBox>
                     </children>
                 </VBox>
             </content>
         </ScrollPane>
     </left>
-    <center>
-        <VBox spacing="10.0" alignment="TOP_CENTER" BorderPane.alignment="CENTER">
-            <children>
-                <StackPane>
-                    <children>
-                        <Pane fx:id="visualizationPane" />
-                    </children>
-                </StackPane>
-                <Label text="Distance Tracker" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-                <HBox fx:id="distanceTrackerBox" spacing="14.0" alignment="CENTER" style="-fx-font-size: 15px;" />
-            </children>
-        </VBox>
-    </center>
 
-    <right>
-        <ScrollPane fitToWidth="true" prefWidth="200.0">
+    <center>
+        <ScrollPane styleClass="edge-to-edge" fitToWidth="true">
             <content>
-                <VBox spacing="8.0">
-                    <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0" /></padding>
+                <VBox spacing="14.0" alignment="TOP_CENTER">
+                    <padding><Insets top="6.0" right="12.0" bottom="6.0" left="12.0" /></padding>
                     <children>
-                        <Label fx:id="currentStepLabel" text="Current Step: 0" />
-                        <Label fx:id="totalStepsLabel" text="Total Steps: 0" />
-                        <Label fx:id="comparisonsLabel" text="Comparisons: 0" />
-                        <Label fx:id="swapsLabel" text="Swaps: 0" />
-                        <Label fx:id="executionTimeLabel" text="Execution Time: 0ms" />
-                        <Label fx:id="theoreticalComplexityLabel" text="Complexity: -" />
-                        <ProgressBar fx:id="progressBar" progress="0.0" prefWidth="180.0" />
-                        <Label fx:id="completionLabel" text="" style="-fx-font-weight: bold; -fx-text-fill: #2ecc71;" visible="false" />
+                        <VBox styleClass="card" alignment="CENTER">
+                            <children>
+                                <Pane fx:id="visualizationPane" prefWidth="440.0" prefHeight="320.0" minHeight="320.0" maxWidth="440.0" />
+                            </children>
+                        </VBox>
+
+                        <VBox fx:id="trackerCard" styleClass="card" spacing="8.0">
+                            <children>
+                                <Label text="DISTANCE TRACKER" styleClass="card-title" />
+                                <HBox fx:id="distanceTrackerBox" spacing="12.0" alignment="CENTER_LEFT" />
+                            </children>
+                        </VBox>
+
+                        <Label fx:id="narrationLabel" text="Ready" styleClass="banner" wrapText="true" maxWidth="Infinity" />
                     </children>
                 </VBox>
             </content>
         </ScrollPane>
+    </center>
+
+    <right>
+        <VBox styleClass="card" spacing="8.0" prefWidth="210.0" BorderPane.alignment="TOP_CENTER">
+            <BorderPane.margin><Insets top="6.0" right="16.0" bottom="6.0" left="6.0" /></BorderPane.margin>
+            <children>
+                <Label text="STATS" styleClass="card-title" />
+                <Label fx:id="currentStepLabel" text="Step: 0" />
+                <Label fx:id="totalStepsLabel" text="Total Steps: 0" />
+                <Label fx:id="comparisonsLabel" text="Comparisons: 0" />
+                <Label fx:id="swapsLabel" text="Swaps: 0" />
+                <Label fx:id="executionTimeLabel" text="Execution Time: 0ms" />
+                <Label fx:id="theoreticalComplexityLabel" text="Complexity: -" wrapText="true" />
+                <ProgressBar fx:id="progressBar" progress="0.0" maxWidth="Infinity" />
+                <Label fx:id="completionLabel" text="" visible="false" wrapText="true"
+                       style="-fx-font-weight: bold; -fx-text-fill: #2ecc71;" />
+            </children>
+        </VBox>
     </right>
 
     <bottom>
-        <VBox spacing="8.0">
-            <padding><Insets top="10.0" right="10.0" bottom="10.0" left="10.0" /></padding>
+        <HBox styleClass="card" spacing="10.0" alignment="CENTER_LEFT">
+            <BorderPane.margin><Insets top="6.0" right="16.0" bottom="14.0" left="16.0" /></BorderPane.margin>
             <children>
-                <Label fx:id="narrationLabel" text="Ready" wrapText="true" style="-fx-background-color: #fff3cd; -fx-padding: 6; -fx-background-radius: 4;" />
-                <HBox spacing="10.0">
-                    <children>
-                        <Button fx:id="startButton" text="Start" onAction="#handleStart" />
-                        <Button fx:id="pauseButton" text="Pause" onAction="#handlePause" />
-                        <Button fx:id="previousButton" text="Previous" onAction="#handlePrevious" />
-                        <Button fx:id="nextButton" text="Next" onAction="#handleNext" />
-                        <Button fx:id="restartButton" text="Restart" onAction="#handleRestart" />
-                    </children>
-                </HBox>
-                <HBox spacing="10.0">
-                    <children>
-                        <Label text="Speed:" />
-                        <RadioButton fx:id="slowSpeedRadio" text="Slow" onAction="#handleSpeedRadio">
-                            <toggleGroup>
-                                <ToggleGroup fx:id="speedGroup" />
-                            </toggleGroup>
-                        </RadioButton>
-                        <RadioButton fx:id="mediumSpeedRadio" text="Medium" toggleGroup="$speedGroup" selected="true" onAction="#handleSpeedRadio" />
-                        <RadioButton fx:id="fastSpeedRadio" text="Fast" toggleGroup="$speedGroup" onAction="#handleSpeedRadio" />
-                    </children>
-                </HBox>
+                <Button fx:id="startButton" text="▶ Start" onAction="#handleStart" />
+                <Button fx:id="pauseButton" text="⏸ Pause" onAction="#handlePause" />
+                <Button fx:id="previousButton" text="◀ Prev" onAction="#handlePrevious" />
+                <Button fx:id="nextButton" text="Next ▶" onAction="#handleNext" />
+                <Button fx:id="restartButton" text="↺ Restart" onAction="#handleRestart" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="Speed:" />
+                <RadioButton fx:id="slowSpeedRadio" text="Slow" onAction="#handleSpeedRadio">
+                    <toggleGroup><ToggleGroup fx:id="speedGroup" /></toggleGroup>
+                </RadioButton>
+                <RadioButton fx:id="mediumSpeedRadio" text="Medium" toggleGroup="$speedGroup" selected="true" onAction="#handleSpeedRadio" />
+                <RadioButton fx:id="fastSpeedRadio" text="Fast" toggleGroup="$speedGroup" onAction="#handleSpeedRadio" />
                 <Slider fx:id="speedSlider" min="1.0" max="10.0" value="5.0" visible="false" managed="false" />
             </children>
-        </VBox>
+        </HBox>
     </bottom>
 
 </BorderPane>

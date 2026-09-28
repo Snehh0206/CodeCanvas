@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -8,19 +9,24 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="12.0" alignment="CENTER" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.LoginController">
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.codecanvas.controller.LoginController">
     <children>
-        <Label text="CodeCanvas Login" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
-        <TextField fx:id="usernameField" promptText="Username" maxWidth="250.0" />
-        <StackPane maxWidth="250.0">
+        <VBox styleClass="card" spacing="12.0" alignment="CENTER" maxWidth="360.0" maxHeight="-Infinity">
+            <padding><Insets top="28.0" right="28.0" bottom="28.0" left="28.0" /></padding>
             <children>
-                <PasswordField fx:id="passwordField" promptText="Password" />
-                <TextField fx:id="visiblePasswordField" promptText="Password" visible="false" managed="false" />
+                <Label text="CodeCanvas" styleClass="app-title" />
+                <Label text="Log in to continue" styleClass="subtitle" />
+                <TextField fx:id="usernameField" promptText="Username" />
+                <StackPane>
+                    <children>
+                        <PasswordField fx:id="passwordField" promptText="Password" />
+                        <TextField fx:id="visiblePasswordField" promptText="Password" visible="false" managed="false" />
+                    </children>
+                </StackPane>
+                <CheckBox fx:id="showPasswordCheckBox" text="Show password" onAction="#handleTogglePassword" />
+                <Button text="Login" maxWidth="Infinity" onAction="#handleLogin" />
+                <Button text="Create an account" styleClass="nav-button" style="-fx-alignment: CENTER;" onAction="#handleGoToRegister" />
             </children>
-        </StackPane>
-        <CheckBox fx:id="showPasswordCheckBox" text="Show Password" onAction="#handleTogglePassword" />
-        <Button text="Login" onAction="#handleLogin" />
-        <Button text="Don't have an account? Register" onAction="#handleGoToRegister" />
+        </VBox>
     </children>
-    <padding><Insets top="40.0" right="20.0" bottom="20.0" left="20.0" /></padding>
-</VBox>
+</StackPane>
