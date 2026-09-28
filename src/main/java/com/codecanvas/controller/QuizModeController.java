@@ -1,24 +1,21 @@
 package com.codecanvas.controller;
 
-import com.codecanvas.algorithm.Algorithm;
-import com.codecanvas.algorithm.GraphAlgorithm;
-import com.codecanvas.algorithm.graph.BellmanFord;
-import com.codecanvas.algorithm.graph.Dijkstra;
-import com.codecanvas.algorithm.graph.Kruskal;
-import com.codecanvas.algorithm.graph.Prims;
-import com.codecanvas.algorithm.sorting.InsertionSort;
-import com.codecanvas.algorithm.sorting.MergeSort;
-import com.codecanvas.algorithm.sorting.QuickSort;
 import com.codecanvas.database.QuizResultDAO;
-import com.codecanvas.model.*;
-import com.codecanvas.service.LiveDataFetcher;
-import com.codecanvas.service.QuizGenerator;
+import com.codecanvas.model.QuizQuestion;
+import com.codecanvas.model.QuizResult;
+import com.codecanvas.service.AppExecutor;
+import com.codecanvas.service.QuizBankFetcher;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -30,131 +27,122 @@ import java.util.ResourceBundle;
 
 public class QuizModeController extends BaseController implements Initializable {
 
+    private static final int QUESTIONS_PER_QUIZ = 5;
+
     @FXML private ComboBox<String> algorithmComboBox;
+    @FXML private Label sourceLabel;
+    @FXML private Label progressLabel;
     @FXML private Label questionLabel;
+    @FXML private Label feedbackLabel;
+    @FXML private Label scoreLabel;
     @FXML private VBox optionsBox;
     @FXML private Button submitButton;
-    @FXML private Label scoreLabel;
 
     private final QuizResultDAO quizResultDAO = new QuizResultDAO();
-    private List<AlgorithmStep> sortSteps;
-    private List<GraphStep> graphSteps;
-    private int currentQuestionIndex = 0;
-    private int score = 0;
-    private int totalQuestions = 0;
-    private QuizQuestion currentQuestion;
-    private ToggleGroup toggleGroup;
-    private boolean isGraphQuiz;
+    private List<QuizQuestion> questions = new ArrayList<>();
+    private ToggleGroup group;
     private String algorithmName;
+    private int index;
+    private int score;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         algorithmComboBox.setItems(FXCollections.observableArrayList(
-                "Insertion Sort", "Quick Sort", "Merge Sort", "Dijkstra", "Bellman-Ford", "Prim's Algorithm", "Kruskal's Algorithm"));
+                "Insertion Sort", "Quick Sort", "Merge Sort", "Dijkstra", "Bellman-Ford",
+                "Prim's Algorithm", "Kruskal's Algorithm", "Floyd-Warshall", "BFS", "DFS"));
     }
 
     @FXML
     private void handleStartQuiz() {
         algorithmName = algorithmComboBox.getValue();
         if (algorithmName == null) {
-            new Alert(Alert.AlertType.ERROR, "Pick an algorithm first").showAndWait();
+            new Alert(Alert.AlertType.WARNING, "Pick an algorithm first").showAndWait();
             return;
         }
 
-        isGraphQuiz = algorithmName.equals("Dijkstra") || algorithmName.equals("Bellman-Ford")
-                || algorithmName.equals("Prim's Algorithm") || algorithmName.equals("Kruskal's Algorithm");
+        questionLabel.setText("Loading questions...");
+        sourceLabel.setText("");
+        progressLabel.setText("");
+        scoreLabel.setText("");
+        optionsBox.getChildren().clear();
+        setVisible(submitButton, false);
+        setVisible(feedbackLabel, false);
 
-        questionLabel.setText("Fetching live data...");
-        new Thread(() -> {
+        AppExecutor.submit(() -> {
             try {
-                if (isGraphQuiz) {
-                    Graph liveGraph = com.codecanvas.service.GraphLiveDataFetcher.fetchLiveGraph();
-                    GraphAlgorithm algo = switch (algorithmName) {
-                        case "Dijkstra" -> new Dijkstra();
-                        case "Bellman-Ford" -> new BellmanFord();
-                        case "Prim's Algorithm" -> new Prims();
-                        default -> new Kruskal();
-                    };
-                    graphSteps = algo.run(liveGraph, "0");
-                } else {
-                    int[] liveData = LiveDataFetcher.fetchLiveNumbers();
-                    Algorithm algo = switch (algorithmName) {
-                        case "Insertion Sort" -> new InsertionSort();
-                        case "Quick Sort" -> new QuickSort();
-                        default -> new MergeSort();
-                    };
-                    sortSteps = algo.run(liveData);
-                }
-
-                Platform.runLater(() -> {
-                    currentQuestionIndex = 0;
-                    score = 0;
-                    totalQuestions = 0;
-                    scoreLabel.setText("");
-                    askNextQuestion();
-                });
+                QuizBankFetcher.QuizBank bank = QuizBankFetcher.load(algorithmName);
+                Platform.runLater(() -> startWith(bank));
             } catch (Exception e) {
-                Platform.runLater(() -> questionLabel.setText("Couldn't fetch live data — check internet connection"));
+                Platform.runLater(() -> questionLabel.setText("Could not load questions: " + e.getMessage()));
             }
-        }).start();
+        });
     }
 
-    private void askNextQuestion() {
-        List<?> steps = isGraphQuiz ? graphSteps : sortSteps;
-        if (steps == null || currentQuestionIndex >= steps.size() - 1 || totalQuestions >= 5) {
-            finishQuiz();
+    private void startWith(QuizBankFetcher.QuizBank bank) {
+        sourceLabel.setText("Questions source: " + bank.source);
+        if (bank.questions.isEmpty()) {
+            questionLabel.setText("No questions found for " + algorithmName);
             return;
         }
+        int count = Math.min(QUESTIONS_PER_QUIZ, bank.questions.size());
+        questions = new ArrayList<>(bank.questions.subList(0, count));
+        index = 0;
+        score = 0;
+        showQuestion();
+    }
 
-        if (isGraphQuiz) {
-            currentQuestion = QuizGenerator.buildGraphQuestion(graphSteps.get(currentQuestionIndex), graphSteps.get(currentQuestionIndex + 1));
-        } else {
-            currentQuestion = QuizGenerator.buildQuestion(sortSteps.get(currentQuestionIndex), sortSteps.get(currentQuestionIndex + 1));
-        }
+    private void showQuestion() {
+        QuizQuestion q = questions.get(index);
+        progressLabel.setText("QUESTION " + (index + 1) + " OF " + questions.size());
+        questionLabel.setText(q.getQuestionText());
 
-        questionLabel.setText(currentQuestion.getQuestionText());
         optionsBox.getChildren().clear();
-        toggleGroup = new ToggleGroup();
-
-        for (String option : currentQuestion.getOptions()) {
+        group = new ToggleGroup();
+        for (String option : q.getOptions()) {
             RadioButton rb = new RadioButton(option);
-            rb.setToggleGroup(toggleGroup);
+            rb.setToggleGroup(group);
+            rb.setWrapText(true);
+            rb.setMaxWidth(580);
             optionsBox.getChildren().add(rb);
         }
-
-        submitButton.setVisible(true);
-        submitButton.setManaged(true);
-        currentQuestionIndex += 3; // space questions out across the run
+        setVisible(submitButton, true);
     }
 
     @FXML
     private void handleSubmit() {
-        RadioButton selected = (RadioButton) toggleGroup.getSelectedToggle();
+        RadioButton selected = (RadioButton) group.getSelectedToggle();
         if (selected == null) {
             new Alert(Alert.AlertType.WARNING, "Pick an answer first").showAndWait();
             return;
         }
 
-        totalQuestions++;
-        int selectedIndex = optionsBox.getChildren().indexOf(selected);
-        if (selectedIndex == currentQuestion.getCorrectOptionIndex()) {
-            score++;
-        }
+        QuizQuestion q = questions.get(index);
+        boolean correct = optionsBox.getChildren().indexOf(selected) == q.getCorrectOptionIndex();
+        if (correct) score++;
 
-        askNextQuestion();
+        feedbackLabel.setText(correct ? "Correct!"
+                : "Not quite. Correct answer: " + q.getOptions().get(q.getCorrectOptionIndex()));
+        setVisible(feedbackLabel, true);
+
+        index++;
+        if (index < questions.size()) showQuestion();
+        else finishQuiz();
     }
 
     private void finishQuiz() {
         questionLabel.setText("Quiz complete!");
+        progressLabel.setText("");
         optionsBox.getChildren().clear();
-        submitButton.setVisible(false);
-        submitButton.setManaged(false);
-        scoreLabel.setText("Score: " + score + "/" + totalQuestions);
+        setVisible(submitButton, false);
+        scoreLabel.setText("Score: " + score + " / " + questions.size());
 
-        if (totalQuestions > 0) {
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            QuizResult result = new QuizResult(null, algorithmName, score, totalQuestions, timestamp);
-            new Thread(() -> quizResultDAO.insertResult(result)).start();
-        }
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        QuizResult result = new QuizResult(null, algorithmName, score, questions.size(), timestamp);
+        AppExecutor.submit(() -> quizResultDAO.insertResult(result));
+    }
+
+    private void setVisible(javafx.scene.Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 }

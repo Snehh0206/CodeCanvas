@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -49,8 +50,7 @@ public class SceneManager {
     private static void load(String fxmlFileName) {
         try {
             FXMLLoader loader = new FXMLLoader(
-                    SceneManager.class.getResource("/com/codecanvas/fxml/" + fxmlFileName)
-            );
+                    SceneManager.class.getResource("/com/codecanvas/fxml/" + fxmlFileName));
             Parent root = loader.load();
             Scene scene = primaryStage.getScene();
 
@@ -64,8 +64,10 @@ public class SceneManager {
             applyTheme(scene);
             currentFxml = fxmlFileName;
             primaryStage.show();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            new Alert(Alert.AlertType.ERROR, "Could not open " + fxmlFileName + ":\n" + cause).show();
         }
     }
 

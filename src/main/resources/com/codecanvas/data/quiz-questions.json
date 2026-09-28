@@ -1,0 +1,22 @@
+[
+  {"algorithm":"Insertion Sort","question":"What is the best-case time complexity of Insertion Sort?","options":["O(n)","O(n log n)","O(n^2)","O(log n)"],"answer":0},
+  {"algorithm":"Insertion Sort","question":"Insertion Sort works fastest on which kind of input?","options":["Reverse-sorted arrays","Nearly sorted arrays","Arrays with all different large values","Very large random arrays"],"answer":1},
+  {"algorithm":"Quick Sort","question":"Which input is the worst case for Quick Sort when the last element is the pivot?","options":["A randomly shuffled array","An already sorted array","An empty array","An array with one element"],"answer":1},
+  {"algorithm":"Quick Sort","question":"What is the average-case time complexity of Quick Sort?","options":["O(n)","O(n log n)","O(n^2)","O(log n)"],"answer":1},
+  {"algorithm":"Merge Sort","question":"What is the time complexity of Merge Sort in every case?","options":["O(n)","O(n log n)","O(n^2)","It depends on the input order"],"answer":1},
+  {"algorithm":"Merge Sort","question":"What does Merge Sort do after splitting the array into two halves?","options":["Picks a pivot","Sorts each half and merges them","Swaps neighbouring elements","Builds a heap"],"answer":1},
+  {"algorithm":"Dijkstra","question":"Which graphs can Dijkstra's algorithm NOT handle correctly?","options":["Graphs with negative edge weights","Graphs with cycles","Graphs with many vertices","Graphs with only positive weights"],"answer":0},
+  {"algorithm":"Dijkstra","question":"What does Dijkstra's algorithm compute?","options":["Shortest paths from one source to every vertex","A minimum spanning tree","Shortest paths between all pairs of vertices","A topological order"],"answer":0},
+  {"algorithm":"Bellman-Ford","question":"What can Bellman-Ford handle that Dijkstra cannot?","options":["Negative edge weights","Larger graphs","Undirected graphs","Graphs with cycles"],"answer":0},
+  {"algorithm":"Bellman-Ford","question":"At most how many passes over all edges does Bellman-Ford need?","options":["V - 1","E - 1","log V","V^2"],"answer":0},
+  {"algorithm":"Prim's Algorithm","question":"What does Prim's algorithm build?","options":["A minimum spanning tree","A shortest path from one source","A sorted list of vertices","A depth-first tree"],"answer":0},
+  {"algorithm":"Prim's Algorithm","question":"How does Prim's algorithm grow its tree?","options":["It adds the cheapest edge that reaches a new vertex","It sorts all edges and skips cycles","It visits vertices level by level","It relaxes every edge V - 1 times"],"answer":0},
+  {"algorithm":"Kruskal's Algorithm","question":"What does Kruskal's algorithm use to detect cycles?","options":["Union-Find (disjoint sets)","A FIFO queue","A recursion stack","A distance matrix"],"answer":0},
+  {"algorithm":"Kruskal's Algorithm","question":"What is the first step of Kruskal's algorithm?","options":["Sort all edges by weight","Pick a source vertex","Build a distance matrix","Push the start vertex on a queue"],"answer":0},
+  {"algorithm":"Floyd-Warshall","question":"What does Floyd-Warshall compute?","options":["Shortest paths between all pairs of vertices","Shortest paths from one source only","A minimum spanning tree","The number of connected components"],"answer":0},
+  {"algorithm":"Floyd-Warshall","question":"What is the time complexity of Floyd-Warshall?","options":["O(V^3)","O(V + E)","O(E log V)","O(V^2)"],"answer":0},
+  {"algorithm":"BFS","question":"Which data structure does BFS use?","options":["A queue","A stack","A priority queue","A hash table"],"answer":0},
+  {"algorithm":"BFS","question":"In an unweighted graph, BFS finds the shortest path measured in what?","options":["Number of edges","Sum of edge weights","Number of vertices in the graph","Vertex degrees"],"answer":0},
+  {"algorithm":"DFS","question":"Which data structure does DFS use, directly or through recursion?","options":["A stack","A queue","A priority queue","A distance matrix"],"answer":0},
+  {"algorithm":"DFS","question":"What is the time complexity of DFS on a graph with V vertices and E edges?","options":["O(V + E)","O(V^2)","O(E log V)","O(V^3)"],"answer":0}
+]
